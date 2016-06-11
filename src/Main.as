@@ -84,6 +84,7 @@ package
 		
 		internal function checkIfLoadingDone() : void {
 			if(this.loaded_MCs.length >= this.loaders.length) {
+				trace("resources loaded...");
 				creatorLoaded();
 				
 				for(var i = 0; i < this.loaders.length; i++) {
@@ -99,7 +100,6 @@ package
 		
 		internal function creatorLoaded():*
 		{
-			trace("resources loaded...");
 			costumes = new Costumes( this.loaded_MCs );
 			costumes.init();
 			
@@ -447,25 +447,6 @@ package
 			}
 		}
 
-		/*public function buttonClickBefore(pEvent:Event):void { toggleItemBefore(this.buttons_head); }
-		public function buttonEyesClickBefore(pEvent:Event):void { toggleItemBefore(this.buttons_eyes); }
-		public function buttonEarsClickBefore(pEvent:Event):void { toggleItemBefore(this.buttons_ears); }
-		public function buttonMouthClickBefore(pEvent:Event):void { toggleItemBefore(this.buttons_mouth); }
-		public function buttonNeckClickBefore(pEvent:Event):void { toggleItemBefore(this.buttons_neck); }
-		
-		private function toggleItemBefore(pItemArray:Array) : void {
-			var tButton:GUI.SpritePushButton = null;
-			var i:int = 0;
-			while (i < pItemArray.length) {
-				tButton = pItemArray[i] as GUI.SpritePushButton;
-				if (tButton.Pushed) {
-					tButton.Unpressed();
-					tButton.Pushed = false;
-				}
-				++i;
-			}
-		}*/
-
 		public function removeGunClicked(pEvent:Event):void { _removeItem(SHOP_ITEM_TYPE.PRIMARY_WEAPON); }
 		public function removeHairClicked(pEvent:Event):void { _removeItem(SHOP_ITEM_TYPE.HAIR); }
 		
@@ -531,88 +512,91 @@ package
 			} catch (e:Error) { };
 		}
 
-		internal function setupSwatches(pSwatches:Array):*
-		{
-			var tLength:int = pSwatches.length;
-			
-			for(var i = 0; i < colorSwatches.length; i++) {
-				colorSwatches[i].alpha = 0;
+		/****************************
+		* Color Picker Stuff
+		*****************************/
+			internal function setupSwatches(pSwatches:Array):*
+			{
+				var tLength:int = pSwatches.length;
 				
-				if (tLength > i) {
-					this.colorSwatches[i].alpha = 1;
-					this.colorSwatches[i].Value = pSwatches[i];
-					if (this.selectedSwatch == i) {
-						this.psColorPick.setCursor(this.colorSwatches[i].TextValue);
+				for(var i = 0; i < colorSwatches.length; i++) {
+					colorSwatches[i].alpha = 0;
+					
+					if (tLength > i) {
+						this.colorSwatches[i].alpha = 1;
+						this.colorSwatches[i].Value = pSwatches[i];
+						if (this.selectedSwatch == i) {
+							this.psColorPick.setCursor(this.colorSwatches[i].TextValue);
+						}
 					}
 				}
+				if (tLength > 9) {
+					trace("!!! more than 9 colors !!!");
+				}
 			}
-			if (tLength > 9) {
-				trace("!!! more than 9 colors !!!");
-			}
-		}
 
-		/*public function colorBtnHairClicked(pEvent:Event):void { _colorClicked(SHOP_ITEM_TYPE.HAIR); }
-		public function colorBtnGunClicked(pEvent:Event):void { _colorClicked(SHOP_ITEM_TYPE.PRIMARY_WEAPON); }
-		
-		private function _colorClicked(pType:String) : void {
-			if(this.character.getItem(pType) == null) { return; }
-			if(getInfoBarByType(pType).colorWheelActive == false) { return; }
+			/*public function colorBtnHairClicked(pEvent:Event):void { _colorClicked(SHOP_ITEM_TYPE.HAIR); }
+			public function colorBtnGunClicked(pEvent:Event):void { _colorClicked(SHOP_ITEM_TYPE.PRIMARY_WEAPON); }
 			
-			this.selectSwatch(0, false);
-			this.HideAllTabs();
-			this.tabColorPane.active = true;
-			var tData:ShopItemData = getInfoBarByType(pType).data;
-			this.tabColorPane.infoBar.addInfo( tData, costumes.copyColor(this.character.getItem(pType), new tData.itemClass()) );
-			this.currentlyColoringType = pType;
-			this.setupSwatches( this.character.getColors(pType) );
-			this.shop.addChild(this.tabColorPane);
-		}*/
+			private function _colorClicked(pType:String) : void {
+				if(this.character.getItem(pType) == null) { return; }
+				if(getInfoBarByType(pType).colorWheelActive == false) { return; }
+				
+				this.selectSwatch(0, false);
+				this.HideAllTabs();
+				this.tabColorPane.active = true;
+				var tData:ShopItemData = getInfoBarByType(pType).data;
+				this.tabColorPane.infoBar.addInfo( tData, costumes.copyColor(this.character.getItem(pType), new tData.itemClass()) );
+				this.currentlyColoringType = pType;
+				this.setupSwatches( this.character.getColors(pType) );
+				this.shop.addChild(this.tabColorPane);
+			}*/
 
-		internal function defaults_btnClicked(pEvent:Event) : void
-		{
-			var tMC:MovieClip = this.character.getItem(this.currentlyColoringType);
-			if (tMC != null) 
+			internal function defaults_btnClicked(pEvent:Event) : void
 			{
-				costumes.colorDefault(tMC);
-				costumes.copyColor( tMC, getButtonArrayByType(this.currentlyColoringType)[ getCurItemID(this.currentlyColoringType) ].Image );
-				costumes.copyColor(tMC, getInfoBarByType(this.currentlyColoringType).Image);
-				costumes.copyColor(tMC, this.tabColorPane.infoBar.Image);
-				this.setupSwatches( this.character.getColors(this.currentlyColoringType) );
+				var tMC:MovieClip = this.character.getItem(this.currentlyColoringType);
+				if (tMC != null) 
+				{
+					costumes.colorDefault(tMC);
+					costumes.copyColor( tMC, getButtonArrayByType(this.currentlyColoringType)[ getCurItemID(this.currentlyColoringType) ].Image );
+					costumes.copyColor(tMC, getInfoBarByType(this.currentlyColoringType).Image);
+					costumes.copyColor(tMC, this.tabColorPane.infoBar.Image);
+					this.setupSwatches( this.character.getColors(this.currentlyColoringType) );
+				}
 			}
-		}
-		
-		function colorPickerBackClicked(pEvent:Event):void {
-			_tabClicked( getTabByType( this.tabColorPane.infoBar.data.type ) );
-		}
-
-		internal function colorSwatch1OnEnterPressed(pEvent:Event) : void { this.selectSwatch(0); }
-		internal function colorSwatch2OnEnterPressed(pEvent:Event) : void { this.selectSwatch(1); }
-		internal function colorSwatch3OnEnterPressed(pEvent:Event) : void { this.selectSwatch(2); }
-		internal function colorSwatch4OnEnterPressed(pEvent:Event) : void { this.selectSwatch(3); }
-		internal function colorSwatch5OnEnterPressed(pEvent:Event) : void { this.selectSwatch(4); }
-		internal function colorSwatch6OnEnterPressed(pEvent:Event) : void { this.selectSwatch(5); }
-		internal function colorSwatch7OnEnterPressed(pEvent:Event) : void { this.selectSwatch(6); }
-		internal function colorSwatch8OnEnterPressed(pEvent:Event) : void { this.selectSwatch(7); }
-		internal function colorSwatch9OnEnterPressed(pEvent:Event) : void { this.selectSwatch(8); }
-
-		function colorSwatch1OnClick(pEvent:Event):void { this.selectSwatch(0); }
-		function colorSwatch2OnClick(pEvent:Event):void { this.selectSwatch(1); }
-		function colorSwatch3OnClick(pEvent:Event):void { this.selectSwatch(2); }
-		function colorSwatch4OnClick(pEvent:Event):void { this.selectSwatch(3); }
-		function colorSwatch5OnClick(pEvent:Event):void { this.selectSwatch(4); }
-		function colorSwatch6OnClick(pEvent:Event):void { this.selectSwatch(5); }
-		function colorSwatch7OnClick(pEvent:Event):void { this.selectSwatch(6); }
-		function colorSwatch8OnClick(pEvent:Event):void { this.selectSwatch(7); }
-		function colorSwatch9OnClick(pEvent:Event):void { this.selectSwatch(8); }
-		
-		internal function selectSwatch(pNum:int, pSetCursor:Boolean=true) : void {
-			for(var i = 0; i < colorSwatches.length; i++) {
-				colorSwatches[i].unselect();
+			
+			function colorPickerBackClicked(pEvent:Event):void {
+				_tabClicked( getTabByType( this.tabColorPane.infoBar.data.type ) );
 			}
-			this.selectedSwatch = pNum;
-			colorSwatches[pNum].select();
-			if(pSetCursor) { this.psColorPick.setCursor(this.colorSwatches[pNum].TextValue); }
-		}
+
+			internal function colorSwatch1OnEnterPressed(pEvent:Event) : void { this.selectSwatch(0); }
+			internal function colorSwatch2OnEnterPressed(pEvent:Event) : void { this.selectSwatch(1); }
+			internal function colorSwatch3OnEnterPressed(pEvent:Event) : void { this.selectSwatch(2); }
+			internal function colorSwatch4OnEnterPressed(pEvent:Event) : void { this.selectSwatch(3); }
+			internal function colorSwatch5OnEnterPressed(pEvent:Event) : void { this.selectSwatch(4); }
+			internal function colorSwatch6OnEnterPressed(pEvent:Event) : void { this.selectSwatch(5); }
+			internal function colorSwatch7OnEnterPressed(pEvent:Event) : void { this.selectSwatch(6); }
+			internal function colorSwatch8OnEnterPressed(pEvent:Event) : void { this.selectSwatch(7); }
+			internal function colorSwatch9OnEnterPressed(pEvent:Event) : void { this.selectSwatch(8); }
+
+			function colorSwatch1OnClick(pEvent:Event):void { this.selectSwatch(0); }
+			function colorSwatch2OnClick(pEvent:Event):void { this.selectSwatch(1); }
+			function colorSwatch3OnClick(pEvent:Event):void { this.selectSwatch(2); }
+			function colorSwatch4OnClick(pEvent:Event):void { this.selectSwatch(3); }
+			function colorSwatch5OnClick(pEvent:Event):void { this.selectSwatch(4); }
+			function colorSwatch6OnClick(pEvent:Event):void { this.selectSwatch(5); }
+			function colorSwatch7OnClick(pEvent:Event):void { this.selectSwatch(6); }
+			function colorSwatch8OnClick(pEvent:Event):void { this.selectSwatch(7); }
+			function colorSwatch9OnClick(pEvent:Event):void { this.selectSwatch(8); }
+			
+			internal function selectSwatch(pNum:int, pSetCursor:Boolean=true) : void {
+				for(var i = 0; i < colorSwatches.length; i++) {
+					colorSwatches[i].unselect();
+				}
+				this.selectedSwatch = pNum;
+				colorSwatches[pNum].select();
+				if(pSetCursor) { this.psColorPick.setCursor(this.colorSwatches[pNum].TextValue); }
+			}
 		
 		internal function __setProp_scaleSlider_Scene1_Layer1_0():*
 		{

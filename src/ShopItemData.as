@@ -2,7 +2,7 @@ package
 {
 	import flash.display.*;
 	import flash.display.MovieClip;
-    import flash.geom.*;
+	import flash.geom.*;
 	
 	public class ShopItemData
 	{

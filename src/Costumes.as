@@ -13,6 +13,7 @@ package
 		
 		public var guns:Array;
 		public var hair:Array;
+		
 		public var skins:Array;
 		public var poses:Array;
 		
@@ -99,7 +100,6 @@ package
 		}
 		
 		public function getIndexFromArrayWithID(pArray:Array, pID:int) : int {
-
 			for(var i = 0; i < pArray.length; i++) {
 				if(pArray[i].id == pID) {
 					return i;

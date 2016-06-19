@@ -1,16 +1,24 @@
 package 
 {
-	import GUI.*;
-	import data.*;
 	import com.adobe.images.*;
 	import com.piterwilson.utils.*;
+	import com.fewfre.utils.AssetManager;
+	import com.fewfre.display.*;
+	import com.fewfre.events.*;
+	import com.fewfre.utils.*;
+	
+	import dressroom.ui.*;
+	import dressroom.ui.panes.*;
+	import dressroom.ui.buttons.*;
+	import dressroom.data.*;
+	import dressroom.world.data.*;
+	import dressroom.world.elements.*;
+	
 	import fl.controls.*;
 	import fl.events.*;
 	import flash.display.*;
-	import flash.display.MovieClip;
-	import flash.display.Loader;
-	import flash.events.Event
-	import flash.events.MouseEvent;
+	import flash.text.*;
+	import flash.events.*
 	import flash.external.*;
 	import flash.geom.*;
 	import flash.net.*;
@@ -19,12 +27,27 @@ package
 	public class Main extends MovieClip
 	{
 		// Storage
+		public static var assets	: AssetManager;
 		public static var costumes	: Costumes;
 		
-		//internal var character		: TheMouse;
 		internal var character		: Character;
+		internal var loadingSpinner	: MovieClip;
 		
 		internal var shop			: RoundedRectangle;
+		internal var shopTabs		: ShopTabContainer;
+		internal var animateButton	: SpriteButton;
+		internal var linkTray		: LinkTray;
+		internal var scaleSlider	: FancySlider;
+		
+		internal var currentlyColoringType:String="";
+		internal var configCurrentlyColoringType:String;
+		
+		internal var tabPanes:Array; // Must contain all TabPanes to be able to close them properly.
+		internal var tabPanesMap:Object; // Tab pane should be stored in here to easy access the one you desire.
+		internal var colorTabPane:TabPane;
+		internal var configColorTabPane:TabPane;
+		
+		/*internal var shop			: RoundedRectangle;
 		internal var shopTabs		: GUI.ShopTabContainer;
 		internal var psColorPick	: com.piterwilson.utils.ColorPicker;
 		public var scaleSlider		: fl.controls.Slider;
@@ -36,179 +59,175 @@ package
 		
 		internal var tabPanes:Array;
 		internal var tabPanesMap:Object;
-		internal var tabColorPane:GUI.Tab;
-		
-		// Initial asset load data
-		internal var loaders:Array;
-		internal var loadingSpinner:MovieClip;
-		internal var loaded_MCs:Array;
+		internal var tabColorPane:GUI.Tab;*/
 		
 		// Constructor
 		public function Main()
 		{
 			super();
 			
-			this.loaded_MCs = new Array();
+			assets = new AssetManager();
+			assets.load([
+				"resources/resources.swf"
+			]);
+			assets.addEventListener(AssetManager.LOADING_FINISHED, _onLoadComplete);
 			
-			stage.align = flash.display.StageAlign.TOP;
-			stage.scaleMode = flash.display.StageScaleMode.NO_SCALE;
-			stage.frameRate = 10;
-			
-			this.loaders = new Array();
-			this.loaders.push(newAssetLoader("resources/resources.swf"));
-			
-			loadingSpinner = new $Loader();
-			addChild( loadingSpinner );
+			loadingSpinner = addChild( new $Loader() );
 			loadingSpinner.x = 900 * 0.5;
 			loadingSpinner.y = 425 * 0.5;
 			loadingSpinner.scaleX = 2;
 			loadingSpinner.scaleY = 2;
 			
-			addEventListener("enterFrame", this.Update, false, 0, true);
+			stage.align = StageAlign.TOP;
+			stage.scaleMode = StageScaleMode.NO_SCALE;
+			stage.frameRate = 10;
+			
+			addEventListener("enterFrame", update);
 			stage.addEventListener(MouseEvent.MOUSE_WHEEL, handleMouseWheel);
-			
-			this.__setProp_scaleSlider_Scene1_Layer1_0();
-		}
-		internal function newAssetLoader(pUrl:String) : Loader {
-			var tLoader:Loader = new Loader();
-			tLoader.contentLoaderInfo.addEventListener(Event.INIT, this.dataLoaded);
-			tLoader.load(new flash.net.URLRequest(pUrl));
-			return tLoader;
 		}
 		
-		internal function dataLoaded(event:Event) : void {
-			this.loaded_MCs.push( MovieClip(event.target.content) );
-			
-			checkIfLoadingDone();
-		}
-		
-		internal function checkIfLoadingDone() : void {
-			if(this.loaded_MCs.length >= this.loaders.length) {
-				trace("resources loaded...");
-				creatorLoaded();
-				
-				for(var i = 0; i < this.loaders.length; i++) {
-					this.loaders[i].contentLoaderInfo.removeEventListener(Event.INIT, this.dataLoaded);
-					this.loaders[i] = null;
-				}
-				this.loaders = null;
-				
-				removeChild( loadingSpinner );
-				loadingSpinner = null;
-			}
-		}
-		
-		internal function creatorLoaded():*
+		internal function _onLoadComplete(event:Event) : void
 		{
-			costumes = new Costumes( this.loaded_MCs );
+			removeChild( loadingSpinner );
+			loadingSpinner = null;
+				
+			costumes = new Costumes( assets );
 			costumes.init();
 			
-			var defaults_btn:GUI.Clickable;
-			var i:int;
+			/****************************
+			* Create Character
+			*****************************/
+			var parms:flash.net.URLVariables = null;
+			try {
+				var urlPath:String = ExternalInterface.call("eval", "window.location.href");
+				if(urlPath && urlPath.indexOf("?") > 0) {
+					urlPath = urlPath.substr(urlPath.indexOf("?") + 1, urlPath.length);
+					parms = new flash.net.URLVariables();
+					parms.decode(urlPath);
+				}
+			} catch (error:Error) { };
 			
-			this.character = addChild(new Character(costumes.skins[costumes.defaultSkinIndex], null, null, costumes.poses[costumes.defaultPoseIndex]));
-			this.character.x = 180;
-			this.character.y = 300;//180;
-			this.character.scaleX = 1;
-			this.character.scaleY = 1;
+			this.character = addChild(new Character({ x:180, y:375,
+				skin:costumes.skins[costumes.defaultSkinIndex],
+				pose:costumes.poses[costumes.defaultPoseIndex],
+				params:parms
+			}));
 			
-			var btn:SpriteButton = addChild(new SpriteButton(5, 5, 60, 60, new $LargeDownload(), 1));
-			btn.doMouseover = true;
-			btn.Image.scaleX = btn.Image.scaleY = 1;
-			btn.addEventListener(flash.events.MouseEvent.MOUSE_UP, function():void { saveScreenshot(); });
+			/****************************
+			* Setup UI
+			*****************************/
+			this.shop = addChild(new RoundedRectangle(450, 10, ConstantsApp.SHOP_WIDTH, ConstantsApp.APP_HEIGHT));//ShopTabContainer(450, 10, 440, ConstantsApp.APP_HEIGHT);
+			this.shop.drawSimpleGradient([ 0x112528, 0x1E3D42 ], 15, 0x6A8fA2, 0x11171C, 0x324650);
 			
-			var sSlider:fl.controls.Slider = this.scaleSlider;
-			sSlider.addEventListener(fl.events.SliderEvent.CHANGE, function():*
-			{
-				character.outfit.scaleX = sSlider.value;
-				character.outfit.scaleY = sSlider.value;
-				return;
-			})
-			sSlider.addEventListener(fl.events.SliderEvent.THUMB_DRAG, function():*
-			{
-				character.outfit.scaleX = sSlider.value;
-				character.outfit.scaleY = sSlider.value;
-				return;
-			})
+			this.shopTabs = addChild(new ShopTabContainer(380, 10, 60, ConstantsApp.APP_HEIGHT));
+			this.shopTabs.addEventListener(ShopTabContainer.EVENT_SHOP_TAB_CLICKED, _onTabClicked);
 			
-			this.shop = new GUI.RoundedRectangle(450, 10, ConstantsApp.SHOP_WIDTH, ConstantsApp.APP_HEIGHT);//GUI.ShopTabContainer(450, 10, 440, ConstantsApp.APP_HEIGHT);
-			this.shop.drawSimpleGradient([ 0x112528, 0x1E3D42 ], 15, 6983586, 1120028, 3294800);
-			addChild(this.shop);
-			this.shopTabs = new GUI.ShopTabContainer(380, 10, 60, ConstantsApp.APP_HEIGHT);
-			addChild(this.shopTabs);
+			// Toolbox
+			var tools:RoundedRectangle = addChild(new RoundedRectangle(5, 10, 365, 35));
+			tools.drawSimpleGradient([ 0x112528, 0x1E3D42 ], 15, 0x6A8fA2, 0x11171C, 0x324650);
 			
-			this.shopTabs.addEventListener(ShopTabContainer.TAB_SKIN_CLICK, this.tabSkinClicked, false, 0, true);
-			this.shopTabs.addEventListener(ShopTabContainer.TAB_HAIR_CLICK, this.tabHairClicked, false, 0, true);
-			this.shopTabs.addEventListener(ShopTabContainer.TAB_GUNS_CLICK, this.tabGunsClicked, false, 0, true);
-			this.shopTabs.addEventListener(ShopTabContainer.TAB_POSES_CLICK, this.tabPosesClicked, false, 0, true);
+			var btn:ButtonBase, tButtonSize = 28, tButtonSizeSpace=5;
+			btn = tools.addChild(new SpriteButton({ x:tButtonSizeSpace, y:4, width:tButtonSize, height:tButtonSize, obj_scale:0.4, obj:new $LargeDownload() }));
+			btn.addEventListener(ButtonBase.CLICK, _onSaveClicked);
 			
+			animateButton = tools.addChild(new SpriteButton({ x:tButtonSizeSpace+(tButtonSize+tButtonSizeSpace), y:4, width:tButtonSize, height:tButtonSize, obj_scale:0.5, obj:new $PauseButton() }));
+			animateButton.addEventListener(ButtonBase.CLICK, _onPlayerAnimationToggle);
+			
+			btn = tools.addChild(new SpriteButton({ x:tButtonSizeSpace+(tButtonSize+tButtonSizeSpace)*2, y:4, width:tButtonSize, height:tButtonSize, obj_scale:0.5, obj:new $Refresh() }));
+			btn.addEventListener(ButtonBase.CLICK, _onRandomizeDesignClicked);
+			
+			btn = tools.addChild(new SpriteButton({ x:tButtonSizeSpace+(tButtonSize+tButtonSizeSpace)*3, y:4, width:tButtonSize, height:tButtonSize, obj_scale:0.45, obj:new $Link() }));
+			btn.addEventListener(ButtonBase.CLICK, _onShareButtonClicked);
+			linkTray = new LinkTray({ x:stage.stageWidth * 0.5, y:stage.stageHeight * 0.5 });
+			linkTray.addEventListener(LinkTray.CLOSE, _onShareTrayClosed);
+			
+			btn = tools.addChild(new SpriteButton({ x:tools.width-tButtonSizeSpace-tButtonSize, y:4, width:tButtonSize, height:tButtonSize, obj_scale:0.35, obj:new $GitHubIcon() }));
+			btn.addEventListener(ButtonBase.CLICK, function():void { navigateToURL(new URLRequest(ConstantsApp.SOURCE_URL), "_blank");  });
+			
+			var tSliderWidth = 315 - (tButtonSize+tButtonSizeSpace)*4.5;
+			this.scaleSlider = tools.addChild(new FancySlider({ x:tools.width*0.5-tSliderWidth*0.5+(tButtonSize+tButtonSizeSpace)*1.5, y:tools.Height*0.5, value: character.outfit.scaleX*10, min:10, max:50, width:tSliderWidth }));
+			this.scaleSlider.addEventListener(FancySlider.CHANGE, _onScaleSliderChange);
+			
+			/****************************
+			* Create tabs and panes
+			*****************************/
 			this.tabPanes = new Array();
 			this.tabPanesMap = new Object();
-			var tPane:GUI.Tab = null;
 			
-			tPane = tabPanesMap[SHOP_ITEM_TYPE.SKIN] = this.tabPanes[this.tabPanes.push(new GUI.Tab())-1];
-			_setupPane(tPane, costumes.skins, this.buttonSkinClickAfter, true);
-			//tPane.infoBar.colorWheel.addEventListener(MouseEvent.MOUSE_UP, this.colorBtnSkinClicked, false, 0, true);
-			tPane.infoBar.imageCont.addEventListener(MouseEvent.MOUSE_UP, this.removeSkinClicked, false, 0, true);
-			// Select Default Skin
-			tPane.infoBar.addInfo(costumes.skins[costumes.defaultSkinIndex], new Skin( costumes.skins[costumes.defaultSkinIndex] ));
-			tPane.buttons[costumes.defaultSkinIndex].ToggleOn();
-			// Select Pane
-			this.shop.addChild(tPane);
-			tPane.active = true;
+			tabPanes.push( colorTabPane = new ColorPickerTabPane({}) );
+			colorTabPane.addEventListener(ColorPickerTabPane.EVENT_COLOR_PICKED, _onColorPickChanged);
+			colorTabPane.addEventListener(ColorPickerTabPane.EVENT_DEFAULT_CLICKED, _onDefaultsButtonClicked);
+			colorTabPane.addEventListener(ColorPickerTabPane.EVENT_EXIT, _onColorPickerBackClicked);
 			
-			tPane = tabPanesMap[SHOP_ITEM_TYPE.HAIR] = this.tabPanes[this.tabPanes.push(new GUI.Tab())-1];
-			_setupPane(tPane, costumes.hair, this.buttonHairClickAfter);
-			//tPane.infoBar.colorWheel.addEventListener(MouseEvent.MOUSE_UP, this.colorBtnHairClicked, false, 0, true);
-			tPane.infoBar.imageCont.addEventListener(MouseEvent.MOUSE_UP, this.removeHairClicked, false, 0, true);
+			// Create the panes
+			var tTypes = [ ITEM.SKIN, ITEM.HAIR, ITEM.OBJECT, ITEM.POSE ], tData:ItemData;
+			for(var i:int = 0; i < tTypes.length; i++) {
+				tabPanes.push( tabPanesMap[tTypes[i]] = _setupPane(tTypes[i]) );
+				// Based on what the character is wearing at start, toggle on the appropriate buttons.
+				tData = character.getItemData(tTypes[i]);
+				if(tData) {
+					var tIndex:int = FewfUtils.getIndexFromArrayWithKeyVal(costumes.getArrayByType(tTypes[i]), "id", tData.id);
+					tabPanesMap[tTypes[i]].buttons[ tIndex ].toggleOn();
+				}
+			}
 			
-			tPane = tabPanesMap[SHOP_ITEM_TYPE.PRIMARY_WEAPON] = this.tabPanes[this.tabPanes.push(new GUI.Tab())-1];
-			_setupPane(tPane, costumes.guns, this.buttonGunClickAfter);
-			//tPane.infoBar.colorWheel.addEventListener(MouseEvent.MOUSE_UP, this.colorBtnGunClicked, false, 0, true);
-			tPane.infoBar.imageCont.addEventListener(MouseEvent.MOUSE_UP, this.removeGunClicked, false, 0, true);
-			
-			tPane = tabPanesMap[SHOP_ITEM_TYPE.POSE] = this.tabPanes[this.tabPanes.push(new GUI.Tab())-1];
-			_setupPane(tPane, costumes.poses, this.buttonPoseClickAfter);
-			//tPane.infoBar.colorWheel.addEventListener(MouseEvent.MOUSE_UP, this.colorBtnGunClicked, false, 0, true);
-			tPane.infoBar.imageCont.addEventListener(MouseEvent.MOUSE_UP, this.removePoseClicked, false, 0, true);
-			// Select Default Pose
-			tPane.infoBar.addInfo(costumes.poses[costumes.defaultPoseIndex], new MovieClip());
-			tPane.buttons[costumes.defaultPoseIndex].ToggleOn();
+			// Select First Pane
+			shopTabs.tabs[0].toggleOn();
 		}
 		
-		private function _setupPane(pPane:GUI.Tab, pItemArray:Array, pChangeListener:Function, pIsSkin:Boolean=false) : GUI.Tab {
-			var shopItem : MovieClip;
-			var shopItemButton : GUI.SpritePushButton;
+		private function _setupPane(pType:String) : TabPane {
+			var tPane:TabPane = new TabPane();
+			_setupPaneButtons(tPane, costumes.getArrayByType(pType));
+			tPane.infoBar.colorWheel.addEventListener(ButtonBase.CLICK, function(){ _colorButtonClicked(pType); });
+			tPane.infoBar.imageCont.addEventListener(MouseEvent.CLICK, function(){ _removeItem(pType); });
+			tPane.infoBar.refreshButton.addEventListener(ButtonBase.CLICK, function(){ _randomItemOfType(pType); });
+			return tPane;
+		}
+		
+		private function _setupPaneButtons(pPane:TabPane, pItemArray:Array) : void {
+			var tType:String = pItemArray[0].type;
 			
 			pPane.addInfoBar( new ShopInfoBar({}) );
 			
 			var xoff = 15;
 			var yoff = 5;//15;
-			var radius = 60;
-			var spacing = 65;
-			var buttonPerRow = 6;
 			var wCtr = 0;
 			var w = 0;
 			var h = 0;
 			var i = 0;
-			while (i < pItemArray.length) 
-			{
-				if(pIsSkin) {
-					shopItem = new Skin(costumes.skins[i]);
-					// 385
+			
+			var radius = 60;
+			var spacing = 65;
+			var buttonPerRow = 6;
+			var scale = 1;
+			if(tType == ITEM.SKIN || tType == ITEM.POSE) {
 					buttonPerRow = 4;
 					var space = 5;
 					radius = Math.floor((385 - (space * (buttonPerRow-1))) / buttonPerRow);
 					spacing = radius + space;
-					shopItem.scaleX = shopItem.scaleY = 1.25;
-				} else {
-					shopItem = new pItemArray[i].itemClass();
-					// costumes.colorDefault(shopItem);
-				}
-				shopItemButton = new GUI.SpritePushButton(xoff + spacing * w, yoff + spacing * h, radius, radius, shopItem, i);
+					scale = 1;
+			}
+			
+			var shopItem : MovieClip;
+			var shopItemButton : PushButton;
+			while (i < pItemArray.length) 
+			{
+				shopItem = costumes.getItemImage(pItemArray[i]);
+				/*if(tType == ITEM.SKIN && i == pItemArray.length-1) {
+					shopItem = new MovieClip();
+					var tText = shopItem.addChild(new TextField());
+					tText.defaultTextFormat = new flash.text.TextFormat("Verdana", 15, 0xC2C2DA);
+					tText.autoSize = flash.text.TextFieldAutoSize.CENTER;
+					tText.text = "Invisible";
+					tText.x = (shopItemButton.width - tText.textWidth) * 0.5 - 2;
+					tText.y = (shopItemButton.Height - tText.textHeight) * 0.5 - 2;
+				}*/
+				shopItem.scaleX = shopItem.scaleY = scale;
+					
+				shopItemButton = new PushButton({ x:xoff + spacing * w, y:yoff + spacing * h, width:radius, height:radius, obj:shopItem, id:i, data:{ type:tType, id:i } });
 				pPane.addItem(shopItemButton);
 				pPane.buttons.push(shopItemButton);
-				shopItemButton.addEventListener("state_changed_after", pChangeListener, false, 0, true);
+				shopItemButton.addEventListener(PushButton.STATE_CHANGED_AFTER, _onItemToggled);
 				++wCtr;
 				++w;
 				if (wCtr >= buttonPerRow) 
@@ -220,405 +239,199 @@ package
 				++i;
 			}
 			pPane.UpdatePane();
-			return pPane;
 		}
 		
-		private function _setupColorPickerPane() : void {
-			this.tabColorPane = new GUI.Tab();
-			this.tabColorPane.addInfoBar( new ShopInfoBar({ showBackButton:true }) );
-			// this.tabColorPane.infoBar.colorWheelEnabled = false;
-			this.tabColorPane.infoBar.colorWheel.addEventListener(MouseEvent.MOUSE_UP, this.colorPickerBackClicked, false, 0, true);
-			
-			this.psColorPick = new com.piterwilson.utils.ColorPicker();
-			this.psColorPick.x = 105;
-			this.psColorPick.y = 5;
-			this.psColorPick.addEventListener(com.piterwilson.utils.ColorPicker.COLOR_PICKED, this.colorPickChanged, false, 0, true);
-			this.tabColorPane.addItem(this.psColorPick);
-			
-			i = -1;
-			colorSwatches = new Array();
-			i++;
-			colorSwatches.push(new GUI.ColorSwatch());
-			this.colorSwatches[i].addEventListener(GUI.ColorSwatch.ENTER_PRESSED, this.colorSwatch1OnEnterPressed, false, 0, true);
-			this.colorSwatches[i].addEventListener(GUI.ColorSwatch.BUTTON_CLICK, this.colorSwatch1OnClick, false, 0, true);
-			i++;
-			colorSwatches.push(new GUI.ColorSwatch());
-			this.colorSwatches[i].addEventListener(GUI.ColorSwatch.ENTER_PRESSED, this.colorSwatch2OnEnterPressed, false, 0, true);
-			this.colorSwatches[i].addEventListener(GUI.ColorSwatch.BUTTON_CLICK, this.colorSwatch2OnClick, false, 0, true);
-			i++;
-			colorSwatches.push(new GUI.ColorSwatch());
-			this.colorSwatches[i].addEventListener(GUI.ColorSwatch.ENTER_PRESSED, this.colorSwatch3OnEnterPressed, false, 0, true);
-			this.colorSwatches[i].addEventListener(GUI.ColorSwatch.BUTTON_CLICK, this.colorSwatch3OnClick, false, 0, true);
-			i++;
-			colorSwatches.push(new GUI.ColorSwatch());
-			this.colorSwatches[i].addEventListener(GUI.ColorSwatch.ENTER_PRESSED, this.colorSwatch4OnEnterPressed, false, 0, true);
-			this.colorSwatches[i].addEventListener(GUI.ColorSwatch.BUTTON_CLICK, this.colorSwatch4OnClick, false, 0, true);
-			i++;
-			colorSwatches.push(new GUI.ColorSwatch());
-			this.colorSwatches[i].addEventListener(GUI.ColorSwatch.ENTER_PRESSED, this.colorSwatch5OnEnterPressed, false, 0, true);
-			this.colorSwatches[i].addEventListener(GUI.ColorSwatch.BUTTON_CLICK, this.colorSwatch5OnClick, false, 0, true);
-			i++;
-			colorSwatches.push(new GUI.ColorSwatch());
-			this.colorSwatches[i].addEventListener(GUI.ColorSwatch.ENTER_PRESSED, this.colorSwatch6OnEnterPressed, false, 0, true);
-			this.colorSwatches[i].addEventListener(GUI.ColorSwatch.BUTTON_CLICK, this.colorSwatch6OnClick, false, 0, true);
-			i++;
-			colorSwatches.push(new GUI.ColorSwatch());
-			this.colorSwatches[i].addEventListener(GUI.ColorSwatch.ENTER_PRESSED, this.colorSwatch7OnEnterPressed, false, 0, true);
-			this.colorSwatches[i].addEventListener(GUI.ColorSwatch.BUTTON_CLICK, this.colorSwatch7OnClick, false, 0, true);
-			i++;
-			colorSwatches.push(new GUI.ColorSwatch());
-			this.colorSwatches[i].addEventListener(GUI.ColorSwatch.ENTER_PRESSED, this.colorSwatch8OnEnterPressed, false, 0, true);
-			this.colorSwatches[i].addEventListener(GUI.ColorSwatch.BUTTON_CLICK, this.colorSwatch8OnClick, false, 0, true);
-			i++;
-			colorSwatches.push(new GUI.ColorSwatch());
-			this.colorSwatches[i].addEventListener(GUI.ColorSwatch.ENTER_PRESSED, this.colorSwatch9OnEnterPressed, false, 0, true);
-			this.colorSwatches[i].addEventListener(GUI.ColorSwatch.BUTTON_CLICK, this.colorSwatch9OnClick, false, 0, true);
-			
-			for(var k = 0; k < colorSwatches.length; k++) {
-				this.colorSwatches[k].x = 5;
-				this.colorSwatches[k].y = 45 + (k * 30);
-				this.tabColorPane.addItem(this.colorSwatches[k]);
-			}
-			
-			//defaults_btn = new GUI.Clickable(6, 325, 100, 22, "Defaults");
-			defaults_btn = new GUI.Clickable(6, 10, 100, 22, "Defaults");
-			defaults_btn.addEventListener("button_click", this.defaults_btnClicked, false, 0, true);
-			this.tabColorPane.addItem(defaults_btn);
-			this.tabColorPane.UpdatePane(false);
-		}
-
-		public function Update(pEvent:Event):void
+		public function update(pEvent:Event):void
 		{
 			if(loadingSpinner != null) {
 				loadingSpinner.rotation += 10;
 			}
 		}
 		
-		public function handleMouseWheel(pEvent:MouseEvent) : void {
+		private function handleMouseWheel(pEvent:MouseEvent) : void {
 			if(this.mouseX < this.shopTabs.x) {
-				scaleSlider.value += pEvent.delta * 0.2;
-				character.outfit.scaleX = scaleSlider.value;
-				character.outfit.scaleY = scaleSlider.value;
+				scaleSlider.updateViaMouseWheelDelta(pEvent.delta);
+				character.scale = scaleSlider.getValueAsScale();
 			}
-		}
-
-		internal function colorPickChanged(pEvent:flash.events.DataEvent):void
-		{
-			var tVal:uint = uint(pEvent.data);
-			
-			colorSwatches[this.selectedSwatch].Value = tVal;
-			
-			this.character.colorItem(this.currentlyColoringType, this.selectedSwatch, tVal.toString(16));
-			var tItem:MovieClip = this.character.getItem(this.currentlyColoringType);
-			if (tItem != null) {
-				costumes.copyColor( tItem, getButtonArrayByType(this.currentlyColoringType)[ getCurItemID(this.currentlyColoringType) ].Image );
-				costumes.copyColor(tItem, getInfoBarByType( this.currentlyColoringType ).Image );
-				costumes.copyColor(tItem, this.tabColorPane.infoBar.Image);
-			}
-			return;
-		}
-
-		internal function saveScreenshot() : void
-		{
-			var tRect:flash.geom.Rectangle = this.character.getBounds(this.character);
-			var tBitmap:flash.display.BitmapData = new flash.display.BitmapData(this.character.width, this.character.height, true, 16777215);
-			tBitmap.draw(this.character, new flash.geom.Matrix(1, 0, 0, 1, -tRect.left, -tRect.top));
-			( new flash.net.FileReference() ).save( com.adobe.images.PNGEncoder.encode(tBitmap), "mouse.png" );
-		}
-
-		public function tabSkinClicked(pEvent:Event) : void { _tabClicked( getTabByType(SHOP_ITEM_TYPE.SKIN) ); }
-		public function tabHairClicked(pEvent:Event) : void { _tabClicked( getTabByType(SHOP_ITEM_TYPE.HAIR) ); }
-		public function tabGunsClicked(pEvent:Event) : void { _tabClicked( getTabByType(SHOP_ITEM_TYPE.PRIMARY_WEAPON) ); }
-		public function tabPosesClicked(pEvent:Event) : void { _tabClicked( getTabByType(SHOP_ITEM_TYPE.POSE) ); }
-		
-		internal function _tabClicked(pTab:GUI.Tab) : void {
-			this.HideAllTabs();
-			pTab.active = true;
-			this.shop.addChild(pTab);
-		}
-
-		public function buttonHairClickAfter(pEvent:Event):void {
-			toggleItemSelection(SHOP_ITEM_TYPE.HAIR, pEvent.target, costumes.hair, false, getInfoBarByType(SHOP_ITEM_TYPE.HAIR));
-		}
-
-		public function buttonGunClickAfter(pEvent:Event):void {
-			toggleItemSelection(SHOP_ITEM_TYPE.PRIMARY_WEAPON, pEvent.target, costumes.guns, false, getInfoBarByType(SHOP_ITEM_TYPE.PRIMARY_WEAPON));
 		}
 		
-		private function toggleItemSelection(pType:String, pTarget:GUI.SpritePushButton, pItemArray:Array, pColorDefault:Boolean=false, pInfoBar:ShopInfoBar=null) : void {
-			var tButton:GUI.SpritePushButton = null;
-			var tData:ShopItemData = null;
-			
-			var tButtons:Array = getButtonArrayByType(pType);
-			var i:int=0;
-			while (i < tButtons.length) 
-			{
-				tButton = tButtons[i] as GUI.SpritePushButton;
-				tData = pItemArray[tButton.id];
-				
-				if (tButton.id != pTarget.id) {
-					if (tButton.Pushed) { tButton.ToggleOff(); }
-				}
-				else if (tButton.Pushed) {
-					setCurItemID(pType, tButton.id);
-					this.character.addItem( pType, tData );
-					
-					//pTabButt.ChangeImage( costumes.copyColor(tButton.Image, new tData.itemClass()) );
-					
-					if(pInfoBar != null) {
-						pInfoBar.addInfo( tData, new tData.itemClass() );
-						pInfoBar.colorWheelActive = false;//costumes.getNumOfCustomColors(tButton.Image) > 0;
-					}
-					
-					if(pColorDefault) { this.character.colorDefault(pType); }
-				} else {
-					this.character.removeItem(pType);
-					//pTabButt.ChangeImage(new $Cadeau());
-					
-					if(pInfoBar != null) { pInfoBar.removeInfo(); }
-				}
-				i++ ;
+		private function _onScaleSliderChange(pEvent:Event):void {
+			character.scale = scaleSlider.getValueAsScale();
+		}
+		
+		private function _onColorPickerBackClicked(pEvent:Event):void {
+			_selectTab( getTabByType( this.colorTabPane.infoBar.data.type ) );
+		}
+		
+		private function _onPlayerAnimationToggle(pEvent:Event):void {
+			character.animatePose = !character.animatePose;
+			if(character.animatePose) {
+				character.outfit.play();
+				animateButton.ChangeImage(new $PauseButton());
+			} else {
+				character.outfit.stop();
+				animateButton.ChangeImage(new $PlayButton());
 			}
 		}
-
-		public function buttonSkinClickAfter(pEvent:Event):void {
-			var pType:String = SHOP_ITEM_TYPE.SKIN;
-			var pInfoBar:ShopInfoBar = getInfoBarByType(pType);
+		
+		private function _onSaveClicked(pEvent:Event) : void {
+			Main.costumes.saveMovieClipAsBitmap(this.character, "character");
+		}
+		
+		private function _onItemToggled(pEvent:FewfEvent) : void {
+			var tType = pEvent.data.type;
+			var tItemArray:Array = costumes.getArrayByType(tType);
+			var tInfoBar:ShopInfoBar = getInfoBarByType(tType);
 			
-			var tTarget:GUI.SpritePushButton = pEvent.target as GUI.SpritePushButton;
-			var tButton:GUI.SpritePushButton = null;
-			var tData:ShopItemData = null;
-			var tDataArray:Array = costumes.getArrayByType(pType);
+			// De-select all buttons that aren't the clicked one.
+			var tButtons:Array = getButtonArrayByType(tType);
+			for(var i:int = 0; i < tButtons.length; i++) {
+				if(tButtons[i].data.id != pEvent.data.id) {
+					if (tButtons[i].pushed)  { tButtons[i].toggleOff(); }
+				}
+			}
 			
-			var tButtons:Array = getButtonArrayByType(pType);
-			var i:int = 0;
-			while (i < tButtons.length) {
-				tButton = tButtons[i] as GUI.SpritePushButton;
-				tData = tDataArray[tButton.id];
+			var tButton:PushButton = tButtons[pEvent.data.id];
+			var tData:ItemData;
+			// If clicked button is toggled on, equip it. Otherwise remove it.
+			if(tButton.pushed) {
+				tData = tItemArray[pEvent.data.id];
+				setCurItemID(tType, tButton.id);
+				this.character.setItemData(tData);
 				
-				if (tButton.id != tTarget.id) {
-					if (tButton.Pushed) { tButton.ToggleOff(); }
-				}
-				else if (tButton.Pushed) {
-					setCurItemID(pType, tButton.id);
-					this.character.addItem( pType, tData );
-					
-					pInfoBar.addInfo( tData, new Skin(tData) );
-					pInfoBar.colorWheelActive = false;//tDataArray[tButton.id].id == -1;
-				} else {
-					this.character.setSkin(tDataArray[costumes.defaultSkinIndex]);
-					pInfoBar.addInfo( tDataArray[costumes.defaultSkinIndex], new Skin(tDataArray[costumes.defaultSkinIndex]) );
-					tButtons[costumes.defaultSkinIndex].ToggleOn();
-				}
-				i++;
+				tInfoBar.addInfo( tData, costumes.getItemImage(tData) );
+				tInfoBar.showColorWheel(costumes.getNumOfCustomColors(tButton.Image) > 0);
+			} else {
+				_removeItem(tType);
 			}
 		}
-
-		public function buttonPoseClickAfter(pEvent:Event):void {
-			var pType:String = SHOP_ITEM_TYPE.POSE;
-			var pInfoBar:ShopInfoBar = getInfoBarByType(pType);
-			
-			var tTarget:GUI.SpritePushButton = pEvent.target as GUI.SpritePushButton;
-			var tButton:GUI.SpritePushButton = null;
-			var tData:ShopItemData = null;
-			var tDataArray:Array = costumes.getArrayByType(pType);
-			
-			var tButtons:Array = getButtonArrayByType(pType);
-			var i:int = 0;
-			while (i < tButtons.length) {
-				tButton = tButtons[i] as GUI.SpritePushButton;
-				tData = tDataArray[tButton.id];
-				
-				if (tButton.id != tTarget.id) {
-					if (tButton.Pushed) { tButton.ToggleOff(); }
-				}
-				else if (tButton.Pushed) {
-					setCurItemID(pType, tButton.id);
-					this.character.updatePose(tData.itemClass);
-					
-					pInfoBar.addInfo( tData, new MovieClip() );
-					pInfoBar.colorWheelActive = false;
-				} else {
-					this.character.updatePose(tDataArray[costumes.defaultPoseIndex].itemClass);
-					pInfoBar.addInfo( tDataArray[costumes.defaultPoseIndex], new MovieClip() );
-					tButtons[costumes.defaultPoseIndex].ToggleOn();
-				}
-				i++;
-			}
-		}
-
-		public function removeGunClicked(pEvent:Event):void { _removeItem(SHOP_ITEM_TYPE.PRIMARY_WEAPON); }
-		public function removeHairClicked(pEvent:Event):void { _removeItem(SHOP_ITEM_TYPE.HAIR); }
 		
 		private function _removeItem(pType:String) : void {
-			if(getInfoBarByType(pType).hasData == false) { return; }
-			this.character.removeItem(pType);
-			getInfoBarByType(pType).removeInfo();
-			getButtonArrayByType(pType)[ getCurItemID(pType) ].ToggleOff();
-		}
-		public function removeSkinClicked(pEvent:Event):void {
-			var pType:String = SHOP_ITEM_TYPE.SKIN;
-			var tDataArray:Array = costumes.getArrayByType(pType);
+			var tTabPane = getTabByType(pType);
+			if(tTabPane.infoBar.hasData == false) { return; }
 			
-			this.character.addItem(pType, tDataArray[costumes.defaultSkinIndex]);
-			getInfoBarByType(pType).addInfo( tDataArray[costumes.defaultSkinIndex], new Skin(tDataArray[costumes.defaultSkinIndex]) );
-			getButtonArrayByType(pType)[ getCurItemID(pType) ].ToggleOff();
-			getButtonArrayByType(pType)[costumes.defaultSkinIndex].ToggleOn();
-		}
-		public function removePoseClicked(pEvent:Event):void {
-			var pType:String = SHOP_ITEM_TYPE.POSE;
-			var tDataArray:Array = costumes.getArrayByType(pType);
-			
-			this.character.updatePose(tDataArray[costumes.defaultPoseIndex].itemClass);
-			getInfoBarByType(pType).addInfo( tDataArray[costumes.defaultPoseIndex], new MovieClip() );
-			getButtonArrayByType(pType)[ getCurItemID(pType) ].ToggleOff();
-			getButtonArrayByType(pType)[costumes.defaultPoseIndex].ToggleOn();
-		}
-		
-		private function getTabByType(pType:String) : GUI.Tab {
-			return tabPanesMap[pType];
-		}
-		
-		private function getCurItemID(pType:String) : int {
-			return getTabByType(pType).selectedButton;
-		}
-		
-		private function setCurItemID(pType:String, pID:int) : void {
-			getTabByType(pType).selectedButton = pID;
-		}
-		
-		private function getInfoBarByType(pType:String) : GUI.ShopInfoBar {
-			return getTabByType(pType).infoBar;
-		}
-		
-		private function getButtonArrayByType(pType:String) : Array {
-			return getTabByType(pType).buttons;
-		}
-
-		public function HideAllTabs() : void
-		{
-			for(var i = 0; i < this.tabPanes.length; i++) {
-				_hideTab(this.tabPanes[ i ]);
+			// If item has a default value, toggle it on. otherwise remove item.
+			if(pType == ITEM.SKIN || pType == ITEM.POSE) {
+				var tDefaultIndex = (pType == ITEM.POSE ? costumes.defaultPoseIndex : costumes.defaultSkinIndex);
+				tTabPane.buttons[costumes.defaultSkinIndex].toggleOn();
+			} else {
+				this.character.removeItem(pType);
+				tTabPane.infoBar.removeInfo();
+				tTabPane.buttons[ tTabPane.selectedButtonIndex ].toggleOff();
 			}
-			//_hideTab(this.tabColorPane);
 		}
 		
-		internal function _hideTab(pTab:GUI.Tab) : void {
-			if(!pTab.active) { return; }
-			
-			pTab.active = false;
+		private function _onRandomizeDesignClicked(pEvent:Event) : void {
+			for(var i:int = 0; i < ITEM.LAYERING.length; i++) {
+				_randomItemOfType(ITEM.LAYERING[i]);
+			}
+			_randomItemOfType(ITEM.POSE);
+		}
+		
+		private function _randomItemOfType(pType:String) : void {
+			var tButtons = getButtonArrayByType(pType);
+			var tLength = tButtons.length; //if(pType == ITEM.SKIN) { /* Don't select "transparent" */ tLength--; }
+			tButtons[ Math.floor(Math.random() * tLength) ].toggleOn();
+		}
+		
+		private function _onShareButtonClicked(pEvent:Event) : void {
+			var tURL = "";
 			try {
-				this.shop.removeChild(pTab);
-			} catch (e:Error) { };
+				tURL = ExternalInterface.call("eval", "window.location.origin+window.location.pathname");
+				tURL += "?"+this.character.getParams();
+			} catch (error:Error) {
+				tURL = "<error creating link>";
+			};
+			
+			linkTray.open(tURL);
+			addChild(linkTray);
 		}
-
-		/****************************
-		* Color Picker Stuff
-		*****************************/
-			internal function setupSwatches(pSwatches:Array):*
-			{
-				var tLength:int = pSwatches.length;
-				
-				for(var i = 0; i < colorSwatches.length; i++) {
-					colorSwatches[i].alpha = 0;
-					
-					if (tLength > i) {
-						this.colorSwatches[i].alpha = 1;
-						this.colorSwatches[i].Value = pSwatches[i];
-						if (this.selectedSwatch == i) {
-							this.psColorPick.setCursor(this.colorSwatches[i].TextValue);
-						}
-					}
-				}
-				if (tLength > 9) {
-					trace("!!! more than 9 colors !!!");
-				}
+		
+		private function _onShareTrayClosed(pEvent:Event) : void {
+			removeChild(linkTray);
+		}
+		
+		//{REGION Get TabPane data
+			private function getTabByType(pType:String) : TabPane {
+				return tabPanesMap[pType];
+			}
+			
+			private function getInfoBarByType(pType:String) : ShopInfoBar {
+				return getTabByType(pType).infoBar;
+			}
+			
+			private function getButtonArrayByType(pType:String) : Array {
+				return getTabByType(pType).buttons;
+			}
+			
+			private function getCurItemID(pType:String) : int {
+				return getTabByType(pType).selectedButtonIndex;
+			}
+			
+			private function setCurItemID(pType:String, pID:int) : void {
+				getTabByType(pType).selectedButtonIndex = pID;
+			}
+		//}END Get TabPane data
+		
+		//{REGION TabPane Management
+			private function _onTabClicked(pEvent:flash.events.DataEvent) : void {
+				_selectTab( getTabByType(pEvent.data) );
+			}
+			
+			private function _selectTab(pTab:TabPane) : void {
+				_hideAllTabs();
+				this.shop.addChild(pTab).active = true;
+			}
+			
+			private function _hideTab(pTab:TabPane) : void {
+				if(!pTab.active) { return; }
+				this.shop.removeChild(pTab).active = false;
 			}
 
-			/*public function colorBtnHairClicked(pEvent:Event):void { _colorClicked(SHOP_ITEM_TYPE.HAIR); }
-			public function colorBtnGunClicked(pEvent:Event):void { _colorClicked(SHOP_ITEM_TYPE.PRIMARY_WEAPON); }
-			
-			private function _colorClicked(pType:String) : void {
-				if(this.character.getItem(pType) == null) { return; }
-				if(getInfoBarByType(pType).colorWheelActive == false) { return; }
-				
-				this.selectSwatch(0, false);
-				this.HideAllTabs();
-				this.tabColorPane.active = true;
-				var tData:ShopItemData = getInfoBarByType(pType).data;
-				this.tabColorPane.infoBar.addInfo( tData, costumes.copyColor(this.character.getItem(pType), new tData.itemClass()) );
-				this.currentlyColoringType = pType;
-				this.setupSwatches( this.character.getColors(pType) );
-				this.shop.addChild(this.tabColorPane);
-			}*/
-
-			internal function defaults_btnClicked(pEvent:Event) : void
+			private function _hideAllTabs() : void {
+				for(var i = 0; i < this.tabPanes.length; i++) {
+					_hideTab(this.tabPanes[ i ]);
+				}
+			}
+		//}END TabPane Management
+		
+		//{REGION Color Tab
+			private function _onColorPickChanged(pEvent:flash.events.DataEvent):void
 			{
-				var tMC:MovieClip = this.character.getItem(this.currentlyColoringType);
+				var tVal:uint = uint(pEvent.data);
+				
+				this.character.colorItem(this.currentlyColoringType, this.colorTabPane.selectedSwatch, tVal.toString(16));
+				var tItem:MovieClip = this.character.getItemFromIndex(this.currentlyColoringType);
+				if (tItem != null) {
+					costumes.copyColor( tItem, getButtonArrayByType(this.currentlyColoringType)[ getCurItemID(this.currentlyColoringType) ].Image );
+					costumes.copyColor(tItem, getInfoBarByType( this.currentlyColoringType ).Image );
+					costumes.copyColor(tItem, this.colorTabPane.infoBar.Image);
+				}
+				return;
+			}
+
+			private function _onDefaultsButtonClicked(pEvent:Event) : void
+			{
+				var tMC:MovieClip = this.character.getItemFromIndex(this.currentlyColoringType);
 				if (tMC != null) 
 				{
 					costumes.colorDefault(tMC);
 					costumes.copyColor( tMC, getButtonArrayByType(this.currentlyColoringType)[ getCurItemID(this.currentlyColoringType) ].Image );
 					costumes.copyColor(tMC, getInfoBarByType(this.currentlyColoringType).Image);
-					costumes.copyColor(tMC, this.tabColorPane.infoBar.Image);
-					this.setupSwatches( this.character.getColors(this.currentlyColoringType) );
+					costumes.copyColor(tMC, this.colorTabPane.infoBar.Image);
+					this.colorTabPane.setupSwatches( this.character.getColors(this.currentlyColoringType) );
 				}
 			}
 			
-			function colorPickerBackClicked(pEvent:Event):void {
-				_tabClicked( getTabByType( this.tabColorPane.infoBar.data.type ) );
+			private function _colorButtonClicked(pType:String) : void {
+				if(this.character.getItemFromIndex(pType) == null) { return; }
+				
+				var tData:ItemData = getInfoBarByType(pType).data;
+				this.colorTabPane.infoBar.addInfo( tData, costumes.getItemImage(tData) );
+				this.currentlyColoringType = pType;
+				this.colorTabPane.setupSwatches( this.character.getColors(pType) );
+				_selectTab(this.colorTabPane);
 			}
-
-			internal function colorSwatch1OnEnterPressed(pEvent:Event) : void { this.selectSwatch(0); }
-			internal function colorSwatch2OnEnterPressed(pEvent:Event) : void { this.selectSwatch(1); }
-			internal function colorSwatch3OnEnterPressed(pEvent:Event) : void { this.selectSwatch(2); }
-			internal function colorSwatch4OnEnterPressed(pEvent:Event) : void { this.selectSwatch(3); }
-			internal function colorSwatch5OnEnterPressed(pEvent:Event) : void { this.selectSwatch(4); }
-			internal function colorSwatch6OnEnterPressed(pEvent:Event) : void { this.selectSwatch(5); }
-			internal function colorSwatch7OnEnterPressed(pEvent:Event) : void { this.selectSwatch(6); }
-			internal function colorSwatch8OnEnterPressed(pEvent:Event) : void { this.selectSwatch(7); }
-			internal function colorSwatch9OnEnterPressed(pEvent:Event) : void { this.selectSwatch(8); }
-
-			function colorSwatch1OnClick(pEvent:Event):void { this.selectSwatch(0); }
-			function colorSwatch2OnClick(pEvent:Event):void { this.selectSwatch(1); }
-			function colorSwatch3OnClick(pEvent:Event):void { this.selectSwatch(2); }
-			function colorSwatch4OnClick(pEvent:Event):void { this.selectSwatch(3); }
-			function colorSwatch5OnClick(pEvent:Event):void { this.selectSwatch(4); }
-			function colorSwatch6OnClick(pEvent:Event):void { this.selectSwatch(5); }
-			function colorSwatch7OnClick(pEvent:Event):void { this.selectSwatch(6); }
-			function colorSwatch8OnClick(pEvent:Event):void { this.selectSwatch(7); }
-			function colorSwatch9OnClick(pEvent:Event):void { this.selectSwatch(8); }
-			
-			internal function selectSwatch(pNum:int, pSetCursor:Boolean=true) : void {
-				for(var i = 0; i < colorSwatches.length; i++) {
-					colorSwatches[i].unselect();
-				}
-				this.selectedSwatch = pNum;
-				colorSwatches[pNum].select();
-				if(pSetCursor) { this.psColorPick.setCursor(this.colorSwatches[pNum].TextValue); }
-			}
-		
-		internal function __setProp_scaleSlider_Scene1_Layer1_0():*
-		{
-			try {
-				this.scaleSlider["componentInspectorSetting"] = true;
-			}
-			catch (e:Error) { };
-			
-			this.scaleSlider.direction = "horizontal";
-			this.scaleSlider.enabled = true;
-			this.scaleSlider.liveDragging = false;
-			this.scaleSlider.maximum = 10;
-			this.scaleSlider.minimum = 1;
-			this.scaleSlider.snapInterval = 0;
-			this.scaleSlider.tickInterval = 0;
-			this.scaleSlider.value = 6;
-			this.scaleSlider.visible = true;
-			
-			try {
-				this.scaleSlider["componentInspectorSetting"] = false;
-			}
-			catch (e:Error) { };
-		}
+		//}END Color Tab
 	}
 }

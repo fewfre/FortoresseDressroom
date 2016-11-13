@@ -9,15 +9,17 @@ package dressroom.world.elements
 	public class Pose extends MovieClip
 	{
 		// Storage
+		private var _poseData : ItemData;
 		private var _pose : MovieClip;
 		
 		public function get pose():MovieClip { return _pose; }
 		
 		// Constructor
-		public function Pose(pClass:Class) {
+		public function Pose(pPoseData:ItemData) {
 			super();
+			_poseData = pPoseData;
 			
-			_pose = addChild( new pClass() );
+			_pose = addChild( new pPoseData.itemClass() );
 			stop();
 		}
 		

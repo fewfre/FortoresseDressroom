@@ -11,14 +11,14 @@ package dressroom.world.data
 		public var isZombie:Boolean;
 		
 		// Constructor
-		public function SkinData(pID:String, pGender:String) {
-			super({ id:pID, type:ITEM.SKIN, gender:pGender });
+		public function SkinData(pID:String, pSex:String) {
+			super({ id:pID, type:ITEM.SKIN, sex:pSex });
 			
 			isZombie = (id <= 15 && id >= 11) || id == 7;
-			if(isZombie) { gender = (id <= 15 && id >= 13) ? GENDER.MALE : GENDER.FEMALE; }
+			if(isZombie) { sex = (id <= 15 && id >= 13) ? SEX.MALE : SEX.FEMALE; }
 			
 			classMap = {};
-			var tSex = gender == GENDER.FEMALE ? "1" : "2";
+			var tSex = sex == SEX.FEMALE ? "1" : "2";
 			
 			// Hair may be replaced, so we don't want it in the classMap.
 			_getDefaultHairFromID();
@@ -26,10 +26,10 @@ package dressroom.world.data
 			// Head
 			classMap.T		= Main.assets.getLoadedClass( _getHeadFromID() );
 			// Torso / Pelvis
-			classMap.C		= Main.assets.getLoadedClass( "M_"+id+"_C"+(gender == GENDER.FEMALE || isZombie ? "" : "2") );
+			classMap.C		= Main.assets.getLoadedClass( "M_"+id+"_C"+(sex == SEX.FEMALE || isZombie ? "" : "2") );
 			
 			// Upper Arms
-			classMap.BS		= Main.assets.getLoadedClass( "M_"+id+"_BS"+(gender == GENDER.FEMALE || isZombie ? "" : "2") );
+			classMap.BS		= Main.assets.getLoadedClass( "M_"+id+"_BS"+(sex == SEX.FEMALE || isZombie ? "" : "2") );
 			classMap.BI		= Main.assets.getLoadedClass( "M_"+id+"_BI" );
 			// Hands
 			classMap.M1		= Main.assets.getLoadedClass( "M_"+id+"_M1" );
@@ -47,7 +47,7 @@ package dressroom.world.data
 			classMap.P1		= Main.assets.getLoadedClass( "M_"+id+"_P1" );
 			classMap.P2		= Main.assets.getLoadedClass( "M_"+id+"_P2" );
 			
-			if(gender) this.id += (gender == GENDER.FEMALE ? "F" : "M");
+			if(sex) this.id += (sex == SEX.FEMALE ? "F" : "M");
 		}
 		
 		private function _getHeadFromID() : String {
@@ -56,11 +56,11 @@ package dressroom.world.data
 			// Female: E_tf / E_tfn
 			// Male: E_th / E_th2 / E_th3 / E_th4 / E_th5 (unused?) / E_th6 / E_thn
 			switch(int(id)) {
-				case 0: return gender == GENDER.MALE ? "E_th" : "E_tf";
-				case 1: return gender == GENDER.MALE ? "E_th" : "E_tf";
-				case 2: return gender == GENDER.MALE ? "E_th" : "E_tf";
-				case 3: return gender == GENDER.MALE ? "E_th" : "E_tf";
-				case 4: return gender == GENDER.MALE ? "E_th" : "E_tf";
+				case 0: return sex == SEX.MALE ? "E_th" : "E_tf";
+				case 1: return sex == SEX.MALE ? "E_th" : "E_tf";
+				case 2: return sex == SEX.MALE ? "E_th" : "E_tf";
+				case 3: return sex == SEX.MALE ? "E_th" : "E_tf";
+				case 4: return sex == SEX.MALE ? "E_th" : "E_tf";
 				case 5: return "E_tf";
 				case 6: return "E_th";
 				case 7: return "E_tfz1";
@@ -89,11 +89,11 @@ package dressroom.world.data
 			if(isZombie) { hair = null; return; }
 			var tHairID:int = -1;
 			switch(int(id)) {
-				case 0:	tHairID = gender == GENDER.MALE ? 3 : 1; break;
-				case 1:	tHairID = gender == GENDER.MALE ? 3 : 5; break;
-				case 2:	tHairID = gender == GENDER.MALE ? 4 : 8; break;
-				case 3:	tHairID = gender == GENDER.MALE ? 4 : 1; break;
-				case 4:	tHairID = gender == GENDER.MALE ? 3 : 7; break;
+				case 0:	tHairID = sex == SEX.MALE ? 3 : 1; break;
+				case 1:	tHairID = sex == SEX.MALE ? 3 : 5; break;
+				case 2:	tHairID = sex == SEX.MALE ? 4 : 8; break;
+				case 3:	tHairID = sex == SEX.MALE ? 4 : 1; break;
+				case 4:	tHairID = sex == SEX.MALE ? 3 : 7; break;
 				case 5:	tHairID = 1; break;
 				case 6:	tHairID = 4; break;
 				case 7:	tHairID = -1; break; // Zombie

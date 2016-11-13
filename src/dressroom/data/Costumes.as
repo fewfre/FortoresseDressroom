@@ -39,16 +39,15 @@ package dressroom.data
 			this.hair[0].classMap.T = this.hair[1].itemClass;
 			this.hair.splice(1, 1).itemClass;
 			
-			this.objects = _setupCostumeArray({ base:"Arme_", type:ITEM.OBJECT });
-			for(i = 0; i < objects.length; i++) { objects[i].classMap = { O:objects[i].itemClass }; }
+			this.objects = _setupCostumeArray({ base:"Arme_", type:ITEM.OBJECT, itemClassToClassMap:"O" });
 			
 			this.skins = new Array();
 			for(i = 0; i < _MAX_COSTUMES_TO_CHECK_TO; i++) {
 				if(assets.getLoadedClass( "M_"+i+"_BS" ) != null) {
-					this.skins.push( new SkinData( i, GENDER.FEMALE ) );
+					this.skins.push( new SkinData( i, SEX.FEMALE ) );
 				}
 				if(assets.getLoadedClass( "M_"+i+"_BS2" ) != null) {
-					this.skins.push( new SkinData( i, GENDER.MALE ) );
+					this.skins.push( new SkinData( i, SEX.MALE ) );
 				}
 			}
 			this.defaultSkinIndex = FewfUtils.getFromArrayWithKeyVal(this.skins, "id", ConstantsApp.DEFAULT_SKIN_ID);
@@ -59,7 +58,7 @@ package dressroom.data
 			return this;
 		}
 		
-		// pData = { base:String, type:String, after:String, pad:int, map:Array, sex:Boolean }
+		// pData = { base:String, type:String, after:String, pad:int, map:Array, sex:Boolean, itemClassToClassMap:String OR Array }
 		private function _setupCostumeArray(pData:Object) : Array {
 			var tArray:Array = new Array();
 			var tClassName:String;
@@ -80,7 +79,7 @@ package dressroom.data
 						}
 						if(tClassSuccess) {
 							var tIsSexSpecific = pData.sex && tSexSpecificParts > 0;
-							tArray.push( new ItemData({ id:i+(tIsSexSpecific ? (g==1 ? "M" : "F") : ""), type:pData.type, classMap:tClassMap, itemClass:tClassSuccess, gender:(tIsSexSpecific ? (g==1?GENDER.MALE:GENDER.FEMALE) : null) }) );
+							tArray.push( new ItemData({ id:i+(tIsSexSpecific ? (g==1 ? "M" : "F") : ""), type:pData.type, classMap:tClassMap, itemClass:tClassSuccess, sex:(tIsSexSpecific ? (g==1?SEX.MALE:SEX.FEMALE) : null) }) );
 						}
 						if(tSexSpecificParts == 0) {
 							break;
@@ -90,6 +89,16 @@ package dressroom.data
 					tClass = assets.getLoadedClass( pData.base+(pData.pad ? zeroPad(i, pData.pad) : i)+(pData.after ? pData.after : "") );
 					if(tClass != null) {
 						tArray.push( new ItemData({ id:i, type:pData.type, itemClass:tClass}) );
+						if(pData.itemClassToClassMap) {
+							tArray[tArray.length-1].classMap = {};
+							if(pData.itemClassToClassMap is Array) {
+								for(var c:int = 0; c < pData.itemClassToClassMap.length; c++) {
+									tArray[tArray.length-1].classMap[pData.itemClassToClassMap[c]] = tClass;
+								}
+							} else {
+								tArray[tArray.length-1].classMap[pData.itemClassToClassMap] = tClass;
+							}
+						}
 					}
 				}
 			}
@@ -127,11 +136,11 @@ package dressroom.data
 				var tChild1:*=null;
 				var tChild2:*=null;
 				var i:int = 0;
-				while (i < copyFromMC.numChildren) 
+				while (i < copyFromMC.numChildren)
 				{
 					tChild1 = copyFromMC.getChildAt(i);
 					tChild2 = copyToMC.getChildAt(i);
-					if (tChild1.name.indexOf("Couleur") == 0 && tChild1.name.length > 7) 
+					if (tChild1.name.indexOf("Couleur") == 0 && tChild1.name.length > 7)
 					{
 						tChild2.transform.colorTransform = tChild1.transform.colorTransform;
 					}
@@ -146,10 +155,10 @@ package dressroom.data
 				var tChild:*=null;
 				var tHex:int=0;
 				var loc1:*=0;
-				while (loc1 < pMC.numChildren) 
+				while (loc1 < pMC.numChildren)
 				{
 					tChild = pMC.getChildAt(loc1);
-					if (tChild.name.indexOf("Couleur") == 0 && tChild.name.length > 7) 
+					if (tChild.name.indexOf("Couleur") == 0 && tChild.name.length > 7)
 					{
 						tHex = int("0x" + tChild.name.substr(tChild.name.indexOf("_") + 1, 6));
 						applyColorToObject(tChild, tHex);
@@ -190,10 +199,10 @@ package dressroom.data
 				var tChild:*=null;
 				var num:int = 0;
 				var i:int = 0;
-				while (i < pMC.numChildren) 
+				while (i < pMC.numChildren)
 				{
 					tChild = pMC.getChildAt(i);
-					if (tChild.name.indexOf("Couleur") == 0 && tChild.name.length > 7) 
+					if (tChild.name.indexOf("Couleur") == 0 && tChild.name.length > 7)
 					{
 						num++;
 					}
@@ -217,7 +226,7 @@ package dressroom.data
 					/*case ITEM.SHIRT:
 					case ITEM.PANTS:
 					case ITEM.SHOES:
-						tItem = new Pose(poses[defaultPoseIndex].itemClass).apply({ items:[ pData ], removeBlanks:true });
+						tItem = new Pose(poses[defaultPoseIndex]).apply({ items:[ pData ], removeBlanks:true });
 						break;*/
 					default:
 						tItem = new pData.itemClass();
@@ -232,7 +241,7 @@ package dressroom.data
 				var tPoseData = pData.pose ? pData.pose : poses[defaultPoseIndex];
 				var tSkinData = pData.skin ? pData.skin : skins[defaultSkinIndex];
 				
-				tPose = new Pose(tPoseData.itemClass);
+				tPose = new Pose(tPoseData);
 				tPose.apply({ items:[
 					tSkinData
 				] });
@@ -247,7 +256,7 @@ package dressroom.data
 			if(!pObj){ return; }
 			
 			var tRect:flash.geom.Rectangle = pObj.getBounds(pObj);
-			var tBitmap:flash.display.BitmapData = new flash.display.BitmapData(pObj.width*pScale, pObj.height*pScale, true, 0xFFFFFF);
+			var tBitmap:flash.display.BitmapData = new flash.display.BitmapData(tRect.width*pScale, tRect.height*pScale, true, 0xFFFFFF);
 			
 			var tMatrix:flash.geom.Matrix = new flash.geom.Matrix(1, 0, 0, 1, -tRect.left, -tRect.top);
 			tMatrix.scale(pScale, pScale);

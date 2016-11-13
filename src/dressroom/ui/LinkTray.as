@@ -47,7 +47,7 @@ package dressroom.ui
 			* Background
 			*****************************/
 			var tWidth:Number = 500, tHeight:Number = 200;
-			_bg = addChild(new RoundedRectangle(-tWidth * 0.5, -tHeight * 0.5, tWidth, tHeight));
+			_bg = addChild(new RoundedRectangle({ x:0, y:0, width:tWidth, height:tHeight, origin:0.5 }));
 			_bg.drawSimpleGradient(ConstantsApp.COLOR_TRAY_GRADIENT, 15, ConstantsApp.COLOR_TRAY_B_1, ConstantsApp.COLOR_TRAY_B_2, ConstantsApp.COLOR_TRAY_B_3);
 			
 			/****************************
@@ -65,7 +65,7 @@ package dressroom.ui
 			*****************************/
 			var tTFWidth:Number = tWidth-50, tTFHeight:Number = 18, tTFPaddingX:Number = 5, tTFPaddingY:Number = 5;
 			// So much easier than doing it with those darn native text field options which have no padding.
-			var tTextBackground:RoundedRectangle = addChild(new RoundedRectangle(-(tTFWidth+tTFPaddingX*2)*0.5, -(tTFHeight+tTFPaddingY*2)*0.5, (tTFWidth+tTFPaddingX*2), (tTFHeight+tTFPaddingY*2)));
+			var tTextBackground:RoundedRectangle = addChild(new RoundedRectangle({ x:0, y:0, width:tTFWidth+tTFPaddingX*2, height:tTFHeight+tTFPaddingY*2, origin:0.5 }));
 			tTextBackground.draw(0xFFFFFF, 7, 0x444444, 0x444444, 0x444444);
 			
 			_text = tTextBackground.addChild(new TextField());
@@ -73,8 +73,8 @@ package dressroom.ui
 			_text.multiline = false;
 			_text.width = tTFWidth;
 			_text.height = tTFHeight;
-			_text.x = tTFPaddingX;
-			_text.y = tTFPaddingY;
+			_text.x = tTFPaddingX - tTextBackground.Width*0.5;
+			_text.y = tTFPaddingY - tTextBackground.Height*0.5;
 			_text.addEventListener(MouseEvent.CLICK, function(pEvent:Event){ _text.setSelection(0, _text.text.length); });
 			
 			/****************************

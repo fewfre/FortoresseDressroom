@@ -61,7 +61,7 @@ package dressroom.ui.panes
 		* Private
 		*****************************/
 		private function _setupColorPickerPane(pData:Object) : void {
-			this.addInfoBar( new ShopInfoBar({ showBackButton:true }) );
+			this.addInfoBar( new ShopInfoBar({ showBackButton:true, showRefreshButton:false }) );
 			this.infoBar.colorWheel.addEventListener(MouseEvent.MOUSE_UP, _onColorPickerBackClicked);
 			
 			_psColorPick = new ColorPicker();

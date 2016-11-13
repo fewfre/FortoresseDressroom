@@ -3,6 +3,7 @@
 <head>
 	<title>Fortoresse Dressroom</title>
 	<link rel="icon" href="/favicon.ico" />
+	<meta charset="UTF-8">
 	
 	<meta name="author" content="Fewfre" />
 	
@@ -11,7 +12,7 @@
 			margin: 0;
 		}
 		html, body {
-			height: 100%;
+			min-height: 100%;
 		}
 		body {
 			background: #0e242d center top no-repeat;
@@ -37,6 +38,10 @@
 			padding: 8px 25px 0;
 			margin: 0 auto;
 			border-bottom: 5px solid currentColor;
+		}
+		#nav {
+			position: relative;
+			top: -4px;
 		}
 		#content {
 			
@@ -93,11 +98,28 @@
 				<a href="http://fortoresse.wikia.com" style="float:left;"><img src="http://vignette4.wikia.nocookie.net/fortoresse/images/8/89/Wiki-wordmark.png" /></a>
 				<p>This dressroom was made for use by the <a href="http://fortoresse.wikia.com">Fortoresse Wiki</a> in retrieving images.<br />However, it has been expanded to be a full-fledged easy to use dressroom.<br />Please enjoy!</p>
 			</section>
+			<section style="padding-bottom:0;">
+				Feel free to chat and post links to your outfits below! Please flag any inappropriate comments or spam.
+				<div id="disqus_thread"></div>
+				<script>
+				var disqus_config = function () {
+					// this.page.url = "http://projects.fewfre.com/a801/fortoresse/dressroom/";
+					this.page.identifier = "a801-fortoresse-dressroom";
+				};
+				(function() { // DON'T EDIT BELOW THIS LINE
+					var d = document, s = d.createElement('script');
+					s.src = '//fewfre.disqus.com/embed.js';
+					s.setAttribute('data-timestamp', +new Date());
+					(d.head || d.body).appendChild(s);
+				})();
+				</script>
+				<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+			</section>
 		</div>
 		<div class="push"></div>
 	</div>
 	<footer>
-		Code by Fewfre under the GNU GENERAL PUBLIC LICENSE, with the open source code located <a href="https://github.com/fewfre/FortoresseDressroom">on GitHub</a>. <!-- <a href="resources/update.php" class="update-link">(update resources)</a> -->
+		Code by Fewfre under the GNU GENERAL PUBLIC LICENSE, with the open source code located <a href="https://github.com/fewfre/FortoresseDressroom">on GitHub</a>. <!-- <a href="resources/update.php" class="update-link" title="May take awhile. Please don't spam this.">(update resources)</a> -->
 		<span class="flattr-cont"><script id='fb0hovl'>(function(i){var f,s=document.getElementById(i);f=document.createElement('iframe');f.src='//button.flattr.com/view/?fid=x29v5q&button=compact&url='+encodeURIComponent(document.URL);f.title='Flattr';f.height=20;f.width=110;f.style.borderWidth=0;s.parentNode.insertBefore(f,s);})('fb0hovl');</script></span>
 	</footer>
 	<link rel="stylesheet" href="/a801/project_list.css"></link>

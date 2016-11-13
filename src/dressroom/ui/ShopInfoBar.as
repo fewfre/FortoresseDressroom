@@ -30,14 +30,14 @@ package dressroom.ui
 		public function get hasData() : Boolean { return data != null; }
 		
 		// Constructor
-		// pData = { ?showBackButton:Boolean = false, ?noRefreshButton:Boolean = true }
+		// pData = { ?showBackButton:Boolean = false, ?showRefreshButton:Boolean = true }
 		public function ShopInfoBar(pData:Object=null) {
 			super();
 			pData = pData==null ? {} : pData;
 			this.Width = ConstantsApp.PANE_WIDTH;
 			data = null;
 			
-			imageCont = addChild(new RoundedRectangle(0, 0, 50, 50));
+			imageCont = addChild(new RoundedRectangle({ x:0, y:0, width:50, height:50 }));
 			imageCont.draw(0x6A7495, 15, 0x5d7d90, 0x11171c, 0x3c5064);
 			
 			ChangeImage( new $NoItem() );
@@ -61,7 +61,7 @@ package dressroom.ui
 			downloadButton.addEventListener(ButtonBase.CLICK, saveSprite);
 			downloadButton.disable().alpha = 0;
 			
-			if(pData.noRefreshButton == null || pData.noRefreshButton) {
+			if(pData.showRefreshButton == null || pData.showRefreshButton) {
 				refreshButton = addChild(new ScaleButton({ x:this.Width - 85, y:24, obj:new $Refresh() }));
 			}
 			

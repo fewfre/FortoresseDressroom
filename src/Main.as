@@ -1,4 +1,4 @@
-package 
+package
 {
 	import com.adobe.images.*;
 	import com.piterwilson.utils.*;
@@ -6,14 +6,14 @@ package
 	import com.fewfre.display.*;
 	import com.fewfre.events.*;
 	import com.fewfre.utils.*;
-	
+
 	import dressroom.ui.*;
 	import dressroom.ui.panes.*;
 	import dressroom.ui.buttons.*;
 	import dressroom.data.*;
 	import dressroom.world.data.*;
 	import dressroom.world.elements.*;
-	
+
 	import fl.controls.*;
 	import fl.events.*;
 	import flash.display.*;
@@ -23,77 +23,57 @@ package
 	import flash.geom.*;
 	import flash.net.*;
 	import flash.utils.*;
-	
+
 	public class Main extends MovieClip
 	{
 		// Storage
 		public static var assets	: AssetManager;
 		public static var costumes	: Costumes;
-		
+
 		internal var character		: Character;
-		internal var loadingSpinner	: MovieClip;
-		
-		internal var shop			: RoundedRectangle;
+		internal var loaderDisplay	: LoaderDisplay;
+		internal var _paneManager	: PaneManager;
+
 		internal var shopTabs		: ShopTabContainer;
-		internal var animateButton	: SpriteButton;
+		internal var _toolbox		: Toolbox;
 		internal var linkTray		: LinkTray;
-		internal var scaleSlider	: FancySlider;
-		
+
 		internal var currentlyColoringType:String="";
 		internal var configCurrentlyColoringType:String;
 		
-		internal var tabPanes:Array; // Must contain all TabPanes to be able to close them properly.
-		internal var tabPanesMap:Object; // Tab pane should be stored in here to easy access the one you desire.
-		internal var colorTabPane:TabPane;
-		internal var configColorTabPane:TabPane;
-		
-		/*internal var shop			: RoundedRectangle;
-		internal var shopTabs		: GUI.ShopTabContainer;
-		internal var psColorPick	: com.piterwilson.utils.ColorPicker;
-		public var scaleSlider		: fl.controls.Slider;
-		
-		internal var currentlyColoringType:String="";
-		
-		internal var selectedSwatch:int=0;
-		internal var colorSwatches:Array;
-		
-		internal var tabPanes:Array;
-		internal var tabPanesMap:Object;
-		internal var tabColorPane:GUI.Tab;*/
-		
+		// Constants
+		public static const COLOR_PANE_ID = "colorPane";
+
 		// Constructor
 		public function Main()
 		{
 			super();
-			
+
 			assets = new AssetManager();
 			assets.load([
 				"resources/resources.swf"
 			]);
 			assets.addEventListener(AssetManager.LOADING_FINISHED, _onLoadComplete);
-			
-			loadingSpinner = addChild( new $Loader() );
-			loadingSpinner.x = 900 * 0.5;
-			loadingSpinner.y = 425 * 0.5;
-			loadingSpinner.scaleX = 2;
-			loadingSpinner.scaleY = 2;
-			
+
+			loaderDisplay = addChild( new LoaderDisplay({ x:stage.stageWidth * 0.5, y:stage.stageHeight * 0.5, assetManager:assets }) );
+
 			stage.align = StageAlign.TOP;
 			stage.scaleMode = StageScaleMode.NO_SCALE;
 			stage.frameRate = 10;
-			
-			addEventListener("enterFrame", update);
+
+			BrowserMouseWheelPrevention.init(stage);
 			stage.addEventListener(MouseEvent.MOUSE_WHEEL, handleMouseWheel);
 		}
-		
+
 		internal function _onLoadComplete(event:Event) : void
 		{
-			removeChild( loadingSpinner );
-			loadingSpinner = null;
-				
+			loaderDisplay.destroy();
+			removeChild( loaderDisplay );
+			loaderDisplay = null;
+
 			costumes = new Costumes( assets );
 			costumes.init();
-			
+
 			/****************************
 			* Create Character
 			*****************************/
@@ -106,112 +86,97 @@ package
 					parms.decode(urlPath);
 				}
 			} catch (error:Error) { };
-			
+
 			this.character = addChild(new Character({ x:180, y:375,
 				skin:costumes.skins[costumes.defaultSkinIndex],
 				pose:costumes.poses[costumes.defaultPoseIndex],
 				params:parms
 			}));
-			
+
 			/****************************
 			* Setup UI
 			*****************************/
-			this.shop = addChild(new RoundedRectangle(450, 10, ConstantsApp.SHOP_WIDTH, ConstantsApp.APP_HEIGHT));//ShopTabContainer(450, 10, 440, ConstantsApp.APP_HEIGHT);
-			this.shop.drawSimpleGradient([ 0x112528, 0x1E3D42 ], 15, 0x6A8fA2, 0x11171C, 0x324650);
+			var tShop:RoundedRectangle = addChild(new RoundedRectangle({ x:450, y:10, width:ConstantsApp.SHOP_WIDTH, height:ConstantsApp.APP_HEIGHT }));
+			tShop.drawSimpleGradient(ConstantsApp.COLOR_TRAY_GRADIENT, 15, ConstantsApp.COLOR_TRAY_B_1, ConstantsApp.COLOR_TRAY_B_2, ConstantsApp.COLOR_TRAY_B_3);
+			_paneManager = tShop.addChild(new PaneManager());
 			
-			this.shopTabs = addChild(new ShopTabContainer(380, 10, 60, ConstantsApp.APP_HEIGHT));
+			this.shopTabs = addChild(new ShopTabContainer({ x:380, y:10, width:60, height:ConstantsApp.APP_HEIGHT,
+				tabs:[
+					{ text:"Skin", event:ITEM.SKIN },
+					{ text:"Hair", event:ITEM.HAIR },
+					{ text:"Guns", event:ITEM.OBJECT },
+					{ text:"Pose", event:ITEM.POSE }
+				]
+			}));
 			this.shopTabs.addEventListener(ShopTabContainer.EVENT_SHOP_TAB_CLICKED, _onTabClicked);
-			
+
 			// Toolbox
-			var tools:RoundedRectangle = addChild(new RoundedRectangle(5, 10, 365, 35));
-			tools.drawSimpleGradient([ 0x112528, 0x1E3D42 ], 15, 0x6A8fA2, 0x11171C, 0x324650);
-			
-			var btn:ButtonBase, tButtonSize = 28, tButtonSizeSpace=5;
-			btn = tools.addChild(new SpriteButton({ x:tButtonSizeSpace, y:4, width:tButtonSize, height:tButtonSize, obj_scale:0.4, obj:new $LargeDownload() }));
-			btn.addEventListener(ButtonBase.CLICK, _onSaveClicked);
-			
-			animateButton = tools.addChild(new SpriteButton({ x:tButtonSizeSpace+(tButtonSize+tButtonSizeSpace), y:4, width:tButtonSize, height:tButtonSize, obj_scale:0.5, obj:new $PauseButton() }));
-			animateButton.addEventListener(ButtonBase.CLICK, _onPlayerAnimationToggle);
-			
-			btn = tools.addChild(new SpriteButton({ x:tButtonSizeSpace+(tButtonSize+tButtonSizeSpace)*2, y:4, width:tButtonSize, height:tButtonSize, obj_scale:0.5, obj:new $Refresh() }));
-			btn.addEventListener(ButtonBase.CLICK, _onRandomizeDesignClicked);
-			
-			btn = tools.addChild(new SpriteButton({ x:tButtonSizeSpace+(tButtonSize+tButtonSizeSpace)*3, y:4, width:tButtonSize, height:tButtonSize, obj_scale:0.45, obj:new $Link() }));
-			btn.addEventListener(ButtonBase.CLICK, _onShareButtonClicked);
+			_toolbox = addChild(new Toolbox({
+				x:188, y:28, character:character,
+				onSave:_onSaveClicked, onAnimate:_onPlayerAnimationToggle, onRandomize:_onRandomizeDesignClicked,
+				onShare:_onShareButtonClicked, onScale:_onScaleSliderChange
+			}));
 			linkTray = new LinkTray({ x:stage.stageWidth * 0.5, y:stage.stageHeight * 0.5 });
 			linkTray.addEventListener(LinkTray.CLOSE, _onShareTrayClosed);
-			
-			btn = tools.addChild(new SpriteButton({ x:tools.width-tButtonSizeSpace-tButtonSize, y:4, width:tButtonSize, height:tButtonSize, obj_scale:0.35, obj:new $GitHubIcon() }));
-			btn.addEventListener(ButtonBase.CLICK, function():void { navigateToURL(new URLRequest(ConstantsApp.SOURCE_URL), "_blank");  });
-			
-			var tSliderWidth = 315 - (tButtonSize+tButtonSizeSpace)*4.5;
-			this.scaleSlider = tools.addChild(new FancySlider({ x:tools.width*0.5-tSliderWidth*0.5+(tButtonSize+tButtonSizeSpace)*1.5, y:tools.Height*0.5, value: character.outfit.scaleX*10, min:10, max:50, width:tSliderWidth }));
-			this.scaleSlider.addEventListener(FancySlider.CHANGE, _onScaleSliderChange);
-			
+
 			/****************************
 			* Create tabs and panes
 			*****************************/
-			this.tabPanes = new Array();
-			this.tabPanesMap = new Object();
+			var tPane = null;
 			
-			tabPanes.push( colorTabPane = new ColorPickerTabPane({}) );
-			colorTabPane.addEventListener(ColorPickerTabPane.EVENT_COLOR_PICKED, _onColorPickChanged);
-			colorTabPane.addEventListener(ColorPickerTabPane.EVENT_DEFAULT_CLICKED, _onDefaultsButtonClicked);
-			colorTabPane.addEventListener(ColorPickerTabPane.EVENT_EXIT, _onColorPickerBackClicked);
-			
+			tPane = _paneManager.addPane(COLOR_PANE_ID, new ColorPickerTabPane({}));
+			tPane.addEventListener(ColorPickerTabPane.EVENT_COLOR_PICKED, _onColorPickChanged);
+			tPane.addEventListener(ColorPickerTabPane.EVENT_DEFAULT_CLICKED, _onDefaultsButtonClicked);
+			tPane.addEventListener(ColorPickerTabPane.EVENT_EXIT, _onColorPickerBackClicked);
+
 			// Create the panes
-			var tTypes = [ ITEM.SKIN, ITEM.HAIR, ITEM.OBJECT, ITEM.POSE ], tData:ItemData;
-			for(var i:int = 0; i < tTypes.length; i++) {
-				tabPanes.push( tabPanesMap[tTypes[i]] = _setupPane(tTypes[i]) );
+			var tTypes = [ ITEM.SKIN, ITEM.HAIR, ITEM.OBJECT, ITEM.POSE ], tData:ItemData, tType:String;
+			for(var i:int = 0; i < tTypes.length; i++) { tType = tTypes[i];
+				tPane = _paneManager.addPane(tType, _setupPane(tType));
 				// Based on what the character is wearing at start, toggle on the appropriate buttons.
-				tData = character.getItemData(tTypes[i]);
+				tData = character.getItemData(tType);
 				if(tData) {
-					var tIndex:int = FewfUtils.getIndexFromArrayWithKeyVal(costumes.getArrayByType(tTypes[i]), "id", tData.id);
-					tabPanesMap[tTypes[i]].buttons[ tIndex ].toggleOn();
+					var tIndex:int = FewfUtils.getIndexFromArrayWithKeyVal(costumes.getArrayByType(tType), "id", tData.id);
+					tPane.buttons[ tIndex ].toggleOn();
 				}
 			}
-			
+
 			// Select First Pane
 			shopTabs.tabs[0].toggleOn();
+			
+			tPane = null;
+			tTypes = null;
+			tData = null;
 		}
-		
+
 		private function _setupPane(pType:String) : TabPane {
 			var tPane:TabPane = new TabPane();
+			tPane.addInfoBar( new ShopInfoBar({}) );
 			_setupPaneButtons(tPane, costumes.getArrayByType(pType));
 			tPane.infoBar.colorWheel.addEventListener(ButtonBase.CLICK, function(){ _colorButtonClicked(pType); });
 			tPane.infoBar.imageCont.addEventListener(MouseEvent.CLICK, function(){ _removeItem(pType); });
 			tPane.infoBar.refreshButton.addEventListener(ButtonBase.CLICK, function(){ _randomItemOfType(pType); });
 			return tPane;
 		}
-		
+
 		private function _setupPaneButtons(pPane:TabPane, pItemArray:Array) : void {
 			var tType:String = pItemArray[0].type;
-			
-			pPane.addInfoBar( new ShopInfoBar({}) );
-			
-			var xoff = 15;
-			var yoff = 5;//15;
-			var wCtr = 0;
-			var w = 0;
-			var h = 0;
-			var i = 0;
-			
-			var radius = 60;
-			var spacing = 65;
+
 			var buttonPerRow = 6;
 			var scale = 1;
 			if(tType == ITEM.SKIN || tType == ITEM.POSE) {
 					buttonPerRow = 4;
-					var space = 5;
-					radius = Math.floor((385 - (space * (buttonPerRow-1))) / buttonPerRow);
-					spacing = radius + space;
 					scale = 1;
 			}
-			
+
+			var grid:Grid = pPane.grid;
+			if(!grid) { grid = pPane.addGrid( new Grid({ x:15, y:5, width:385, columns:buttonPerRow, margin:5 }) ); }
+			grid.reset();
+
 			var shopItem : MovieClip;
 			var shopItemButton : PushButton;
-			while (i < pItemArray.length) 
-			{
+			var i = -1;
+			while (i < pItemArray.length-1) { i++;
 				shopItem = costumes.getItemImage(pItemArray[i]);
 				/*if(tType == ITEM.SKIN && i == pItemArray.length-1) {
 					shopItem = new MovieClip();
@@ -223,66 +188,45 @@ package
 					tText.y = (shopItemButton.Height - tText.textHeight) * 0.5 - 2;
 				}*/
 				shopItem.scaleX = shopItem.scaleY = scale;
-					
-				shopItemButton = new PushButton({ x:xoff + spacing * w, y:yoff + spacing * h, width:radius, height:radius, obj:shopItem, id:i, data:{ type:tType, id:i } });
-				pPane.addItem(shopItemButton);
+
+				shopItemButton = new PushButton({ width:grid.radius, height:grid.radius, obj:shopItem, id:i, data:{ type:tType, id:i } });
+				grid.add(shopItemButton);
 				pPane.buttons.push(shopItemButton);
 				shopItemButton.addEventListener(PushButton.STATE_CHANGED_AFTER, _onItemToggled);
-				++wCtr;
-				++w;
-				if (wCtr >= buttonPerRow) 
-				{
-					w = 0;
-					wCtr = 0;
-					++h;
-				}
-				++i;
 			}
 			pPane.UpdatePane();
 		}
-		
-		public function update(pEvent:Event):void
-		{
-			if(loadingSpinner != null) {
-				loadingSpinner.rotation += 10;
-			}
-		}
-		
+
 		private function handleMouseWheel(pEvent:MouseEvent) : void {
 			if(this.mouseX < this.shopTabs.x) {
-				scaleSlider.updateViaMouseWheelDelta(pEvent.delta);
-				character.scale = scaleSlider.getValueAsScale();
+				_toolbox.scaleSlider.updateViaMouseWheelDelta(pEvent.delta);
+				character.scale = _toolbox.scaleSlider.getValueAsScale();
 			}
 		}
-		
+
 		private function _onScaleSliderChange(pEvent:Event):void {
-			character.scale = scaleSlider.getValueAsScale();
+			character.scale = _toolbox.scaleSlider.getValueAsScale();
 		}
-		
-		private function _onColorPickerBackClicked(pEvent:Event):void {
-			_selectTab( getTabByType( this.colorTabPane.infoBar.data.type ) );
-		}
-		
+
 		private function _onPlayerAnimationToggle(pEvent:Event):void {
 			character.animatePose = !character.animatePose;
 			if(character.animatePose) {
 				character.outfit.play();
-				animateButton.ChangeImage(new $PauseButton());
 			} else {
 				character.outfit.stop();
-				animateButton.ChangeImage(new $PlayButton());
 			}
+			_toolbox.toggleAnimateButtonAsset(character.animatePose);
 		}
-		
+
 		private function _onSaveClicked(pEvent:Event) : void {
 			Main.costumes.saveMovieClipAsBitmap(this.character, "character");
 		}
-		
+
 		private function _onItemToggled(pEvent:FewfEvent) : void {
 			var tType = pEvent.data.type;
 			var tItemArray:Array = costumes.getArrayByType(tType);
 			var tInfoBar:ShopInfoBar = getInfoBarByType(tType);
-			
+
 			// De-select all buttons that aren't the clicked one.
 			var tButtons:Array = getButtonArrayByType(tType);
 			for(var i:int = 0; i < tButtons.length; i++) {
@@ -290,7 +234,7 @@ package
 					if (tButtons[i].pushed)  { tButtons[i].toggleOff(); }
 				}
 			}
-			
+
 			var tButton:PushButton = tButtons[pEvent.data.id];
 			var tData:ItemData;
 			// If clicked button is toggled on, equip it. Otherwise remove it.
@@ -298,18 +242,18 @@ package
 				tData = tItemArray[pEvent.data.id];
 				setCurItemID(tType, tButton.id);
 				this.character.setItemData(tData);
-				
+
 				tInfoBar.addInfo( tData, costumes.getItemImage(tData) );
 				tInfoBar.showColorWheel(costumes.getNumOfCustomColors(tButton.Image) > 0);
 			} else {
 				_removeItem(tType);
 			}
 		}
-		
+
 		private function _removeItem(pType:String) : void {
 			var tTabPane = getTabByType(pType);
 			if(tTabPane.infoBar.hasData == false) { return; }
-			
+
 			// If item has a default value, toggle it on. otherwise remove item.
 			if(pType == ITEM.SKIN || pType == ITEM.POSE) {
 				var tDefaultIndex = (pType == ITEM.POSE ? costumes.defaultPoseIndex : costumes.defaultSkinIndex);
@@ -321,19 +265,23 @@ package
 			}
 		}
 		
+		private function _onTabClicked(pEvent:flash.events.DataEvent) : void {
+			_paneManager.openPane(pEvent.data);
+		}
+
 		private function _onRandomizeDesignClicked(pEvent:Event) : void {
 			for(var i:int = 0; i < ITEM.LAYERING.length; i++) {
 				_randomItemOfType(ITEM.LAYERING[i]);
 			}
 			_randomItemOfType(ITEM.POSE);
 		}
-		
+
 		private function _randomItemOfType(pType:String) : void {
 			var tButtons = getButtonArrayByType(pType);
 			var tLength = tButtons.length; //if(pType == ITEM.SKIN) { /* Don't select "transparent" */ tLength--; }
 			tButtons[ Math.floor(Math.random() * tLength) ].toggleOn();
 		}
-		
+
 		private function _onShareButtonClicked(pEvent:Event) : void {
 			var tURL = "";
 			try {
@@ -342,70 +290,48 @@ package
 			} catch (error:Error) {
 				tURL = "<error creating link>";
 			};
-			
+
 			linkTray.open(tURL);
 			addChild(linkTray);
 		}
-		
+
 		private function _onShareTrayClosed(pEvent:Event) : void {
 			removeChild(linkTray);
 		}
-		
+
 		//{REGION Get TabPane data
 			private function getTabByType(pType:String) : TabPane {
-				return tabPanesMap[pType];
+				return _paneManager.getPane(pType);
 			}
-			
+
 			private function getInfoBarByType(pType:String) : ShopInfoBar {
 				return getTabByType(pType).infoBar;
 			}
-			
+
 			private function getButtonArrayByType(pType:String) : Array {
 				return getTabByType(pType).buttons;
 			}
-			
+
 			private function getCurItemID(pType:String) : int {
 				return getTabByType(pType).selectedButtonIndex;
 			}
-			
+
 			private function setCurItemID(pType:String, pID:int) : void {
 				getTabByType(pType).selectedButtonIndex = pID;
 			}
 		//}END Get TabPane data
-		
-		//{REGION TabPane Management
-			private function _onTabClicked(pEvent:flash.events.DataEvent) : void {
-				_selectTab( getTabByType(pEvent.data) );
-			}
-			
-			private function _selectTab(pTab:TabPane) : void {
-				_hideAllTabs();
-				this.shop.addChild(pTab).active = true;
-			}
-			
-			private function _hideTab(pTab:TabPane) : void {
-				if(!pTab.active) { return; }
-				this.shop.removeChild(pTab).active = false;
-			}
 
-			private function _hideAllTabs() : void {
-				for(var i = 0; i < this.tabPanes.length; i++) {
-					_hideTab(this.tabPanes[ i ]);
-				}
-			}
-		//}END TabPane Management
-		
 		//{REGION Color Tab
 			private function _onColorPickChanged(pEvent:flash.events.DataEvent):void
 			{
 				var tVal:uint = uint(pEvent.data);
-				
-				this.character.colorItem(this.currentlyColoringType, this.colorTabPane.selectedSwatch, tVal.toString(16));
+
+				this.character.colorItem(this.currentlyColoringType, _paneManager.getPane(COLOR_PANE_ID).selectedSwatch, tVal.toString(16));
 				var tItem:MovieClip = this.character.getItemFromIndex(this.currentlyColoringType);
 				if (tItem != null) {
 					costumes.copyColor( tItem, getButtonArrayByType(this.currentlyColoringType)[ getCurItemID(this.currentlyColoringType) ].Image );
 					costumes.copyColor(tItem, getInfoBarByType( this.currentlyColoringType ).Image );
-					costumes.copyColor(tItem, this.colorTabPane.infoBar.Image);
+					costumes.copyColor(tItem, _paneManager.getPane(COLOR_PANE_ID).infoBar.Image);
 				}
 				return;
 			}
@@ -413,24 +339,28 @@ package
 			private function _onDefaultsButtonClicked(pEvent:Event) : void
 			{
 				var tMC:MovieClip = this.character.getItemFromIndex(this.currentlyColoringType);
-				if (tMC != null) 
+				if (tMC != null)
 				{
 					costumes.colorDefault(tMC);
 					costumes.copyColor( tMC, getButtonArrayByType(this.currentlyColoringType)[ getCurItemID(this.currentlyColoringType) ].Image );
 					costumes.copyColor(tMC, getInfoBarByType(this.currentlyColoringType).Image);
-					costumes.copyColor(tMC, this.colorTabPane.infoBar.Image);
-					this.colorTabPane.setupSwatches( this.character.getColors(this.currentlyColoringType) );
+					costumes.copyColor(tMC, _paneManager.getPane(COLOR_PANE_ID).infoBar.Image);
+					_paneManager.getPane(COLOR_PANE_ID).setupSwatches( this.character.getColors(this.currentlyColoringType) );
 				}
 			}
-			
+
 			private function _colorButtonClicked(pType:String) : void {
 				if(this.character.getItemFromIndex(pType) == null) { return; }
-				
+
 				var tData:ItemData = getInfoBarByType(pType).data;
-				this.colorTabPane.infoBar.addInfo( tData, costumes.getItemImage(tData) );
+				_paneManager.getPane(COLOR_PANE_ID).infoBar.addInfo( tData, costumes.getItemImage(tData) );
 				this.currentlyColoringType = pType;
-				this.colorTabPane.setupSwatches( this.character.getColors(pType) );
-				_selectTab(this.colorTabPane);
+				_paneManager.getPane(COLOR_PANE_ID).setupSwatches( this.character.getColors(pType) );
+				_paneManager.openPane(COLOR_PANE_ID);
+			}
+
+			private function _onColorPickerBackClicked(pEvent:Event):void {
+				_paneManager.openPane(_paneManager.getPane(COLOR_PANE_ID).infoBar.data.type);
 			}
 		//}END Color Tab
 	}

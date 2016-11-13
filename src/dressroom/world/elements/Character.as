@@ -17,7 +17,7 @@ package dressroom.world.elements
 		private var _itemDataMap:Object;
 		
 		// Properties
-		public function set scale(pVal:Number) { outfit.scaleX = outfit.scaleY = pVal; }
+		public function set scale(pVal:Number) : void { outfit.scaleX = outfit.scaleY = pVal; }
 		
 		// Constructor
 		// pData = { x:Number, y:Number, [various "__Data"s], ?params:URLVariables }
@@ -50,7 +50,7 @@ package dressroom.world.elements
 		public function updatePose() {
 			var tScale = 3;
 			if(outfit != null) { tScale = outfit.scaleX; removeChild(outfit); }
-			outfit = addChild(new Pose(getItemData(ITEM.POSE).itemClass));
+			outfit = addChild(new Pose(getItemData(ITEM.POSE)));
 			outfit.scaleX = outfit.scaleY = tScale;
 			
 			outfit.apply({

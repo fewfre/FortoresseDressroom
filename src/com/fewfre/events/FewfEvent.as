@@ -9,7 +9,7 @@ package com.fewfre.events
 	{
 		public var data:Object;
 		
-		public function FewfEvent( pType:String, pData:Object, pBubbles:Boolean = false, pCancelable:Boolean = false )
+		public function FewfEvent( pType:String, pData:Object = null, pBubbles:Boolean = false, pCancelable:Boolean = false )
 		{
 			super( pType, pBubbles, pCancelable );
 			this.data = pData;

@@ -2,7 +2,6 @@ package
 {
 	import com.adobe.images.*;
 	import com.piterwilson.utils.*;
-	import com.fewfre.utils.AssetManager;
 	import com.fewfre.display.*;
 	import com.fewfre.events.*;
 	import com.fewfre.utils.*;
@@ -27,7 +26,6 @@ package
 	public class Main extends MovieClip
 	{
 		// Storage
-		public static var assets	: AssetManager;
 		public static var costumes	: Costumes;
 
 		internal var character		: Character;
@@ -45,33 +43,51 @@ package
 		public static const COLOR_PANE_ID = "colorPane";
 
 		// Constructor
-		public function Main()
-		{
+		public function Main() {
 			super();
-
-			assets = new AssetManager();
-			assets.load([
-				"resources/resources.swf"
-			]);
-			assets.addEventListener(AssetManager.LOADING_FINISHED, _onLoadComplete);
-
-			loaderDisplay = addChild( new LoaderDisplay({ x:stage.stageWidth * 0.5, y:stage.stageHeight * 0.5, assetManager:assets }) );
-
+			Fewf.init();
+			
 			stage.align = StageAlign.TOP;
 			stage.scaleMode = StageScaleMode.NO_SCALE;
 			stage.frameRate = 10;
-
+			
 			BrowserMouseWheelPrevention.init(stage);
 			stage.addEventListener(MouseEvent.MOUSE_WHEEL, handleMouseWheel);
+			
+			// Start preload
+			Fewf.assets.load([
+				"resources/config.json",
+			]);
+			Fewf.assets.addEventListener(AssetManager.LOADING_FINISHED, _onPreloadComplete);
+
+			loaderDisplay = addChild( new LoaderDisplay({ x:stage.stageWidth * 0.5, y:stage.stageHeight * 0.5 }) );
+		}
+		
+		internal function _onPreloadComplete(event:Event) : void {
+			Fewf.assets.removeEventListener(AssetManager.LOADING_FINISHED, _onPreloadComplete);
+			ConstantsApp.lang = Fewf.assets.getData("config").language;
+			
+			// Start main load
+			Fewf.assets.load([
+				"resources/resources.swf",
+				"resources/i18n/"+ConstantsApp.lang+".json",
+			]);
+			Fewf.assets.addEventListener(AssetManager.LOADING_FINISHED, _onLoadComplete);
 		}
 
-		internal function _onLoadComplete(event:Event) : void
-		{
+		internal function _onLoadComplete(event:Event) : void {
+			Fewf.assets.removeEventListener(AssetManager.LOADING_FINISHED, _onLoadComplete);
 			loaderDisplay.destroy();
 			removeChild( loaderDisplay );
 			loaderDisplay = null;
-
-			costumes = new Costumes( assets );
+			
+			Fewf.i18n.parseFile(Fewf.assets.getData(ConstantsApp.lang));
+			
+			_init();
+		}
+		
+		private function _init() : void {
+			costumes = new Costumes();
 			costumes.init();
 
 			/****************************
@@ -102,10 +118,10 @@ package
 			
 			this.shopTabs = addChild(new ShopTabContainer({ x:380, y:10, width:60, height:ConstantsApp.APP_HEIGHT,
 				tabs:[
-					{ text:"Skin", event:ITEM.SKIN },
-					{ text:"Hair", event:ITEM.HAIR },
-					{ text:"Guns", event:ITEM.OBJECT },
-					{ text:"Pose", event:ITEM.POSE }
+					{ text:"tab_skins", event:ITEM.SKIN },
+					{ text:"tab_hair", event:ITEM.HAIR },
+					{ text:"tab_guns", event:ITEM.OBJECT },
+					{ text:"tab_poses", event:ITEM.POSE }
 				]
 			}));
 			this.shopTabs.addEventListener(ShopTabContainer.EVENT_SHOP_TAB_CLICKED, _onTabClicked);
@@ -178,15 +194,6 @@ package
 			var i = -1;
 			while (i < pItemArray.length-1) { i++;
 				shopItem = costumes.getItemImage(pItemArray[i]);
-				/*if(tType == ITEM.SKIN && i == pItemArray.length-1) {
-					shopItem = new MovieClip();
-					var tText = shopItem.addChild(new TextField());
-					tText.defaultTextFormat = new flash.text.TextFormat("Verdana", 15, 0xC2C2DA);
-					tText.autoSize = flash.text.TextFieldAutoSize.CENTER;
-					tText.text = "Invisible";
-					tText.x = (shopItemButton.width - tText.textWidth) * 0.5 - 2;
-					tText.y = (shopItemButton.Height - tText.textHeight) * 0.5 - 2;
-				}*/
 				shopItem.scaleX = shopItem.scaleY = scale;
 
 				shopItemButton = new PushButton({ width:grid.radius, height:grid.radius, obj:shopItem, id:i, data:{ type:tType, id:i } });

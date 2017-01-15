@@ -13,8 +13,6 @@ package dressroom.data
 	{
 		private const _MAX_COSTUMES_TO_CHECK_TO:Number = 250;
 		
-		public var assets:AssetManager;
-		
 		public var hair:Array;
 		public var objects:Array;
 		
@@ -24,9 +22,8 @@ package dressroom.data
 		public var defaultSkinIndex:int;
 		public var defaultPoseIndex:int;
 		
-		public function Costumes(pAssets:AssetManager) {
+		public function Costumes() {
 			super();
-			assets = pAssets;
 		}
 		
 		public function init() : Costumes {
@@ -43,10 +40,10 @@ package dressroom.data
 			
 			this.skins = new Array();
 			for(i = 0; i < _MAX_COSTUMES_TO_CHECK_TO; i++) {
-				if(assets.getLoadedClass( "M_"+i+"_BS" ) != null) {
+				if(Fewf.assets.getLoadedClass( "M_"+i+"_BS" ) != null) {
 					this.skins.push( new SkinData( i, SEX.FEMALE ) );
 				}
-				if(assets.getLoadedClass( "M_"+i+"_BS2" ) != null) {
+				if(Fewf.assets.getLoadedClass( "M_"+i+"_BS2" ) != null) {
 					this.skins.push( new SkinData( i, SEX.MALE ) );
 				}
 			}
@@ -70,10 +67,10 @@ package dressroom.data
 						var tClassMap = {  }, tClassSuccess = null;
 						tSexSpecificParts = 0;
 						for(var j = 0; j <= pData.map.length; j++) {
-							tClass = assets.getLoadedClass( tClassName = pData.base+(pData.pad ? zeroPad(i, pData.pad) : i)+(pData.after ? pData.after : "")+pData.map[j] );
+							tClass = Fewf.assets.getLoadedClass( tClassName = pData.base+(pData.pad ? zeroPad(i, pData.pad) : i)+(pData.after ? pData.after : "")+pData.map[j] );
 							if(tClass) { tClassMap[pData.map[j]] = tClass; tClassSuccess = tClass; }
 							else if(pData.sex){
-								tClass = assets.getLoadedClass( tClassName+"_"+(g==0?1:2) );
+								tClass = Fewf.assets.getLoadedClass( tClassName+"_"+(g==0?1:2) );
 								if(tClass) { tClassMap[pData.map[j]] = tClass; tClassSuccess = tClass; tSexSpecificParts++ }
 							}
 						}
@@ -86,7 +83,7 @@ package dressroom.data
 						}
 					}
 				} else {
-					tClass = assets.getLoadedClass( pData.base+(pData.pad ? zeroPad(i, pData.pad) : i)+(pData.after ? pData.after : "") );
+					tClass = Fewf.assets.getLoadedClass( pData.base+(pData.pad ? zeroPad(i, pData.pad) : i)+(pData.after ? pData.after : "") );
 					if(tClass != null) {
 						tArray.push( new ItemData({ id:i, type:pData.type, itemClass:tClass}) );
 						if(pData.itemClassToClassMap) {

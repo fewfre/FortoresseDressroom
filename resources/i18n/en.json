@@ -1,0 +1,25 @@
+{
+	"defaultFont": "Verdana",
+	"defaultScale": 1,
+	"strings": {
+		"example":				{
+			"text":"Only text field is required. Scale is 1 by default. Any {0}s will be replaced by a value. Comma placement is important.",
+			"scale":0.7,
+			"font":"Wingdings"
+		},
+		"example2":				{ "text":"Example", "scale":0.9, "font":"Monospace" },
+		
+		"tab_skins":			{ "text":"Skin" },
+		"tab_hair":				{ "text":"Hair" },
+		"tab_guns":				{ "text":"Guns" },
+		"tab_poses":			{ "text":"Pose" },
+		
+		"btn_color_defaults":	{ "text":"Defaults" },
+		
+		"share_header":			{ "text":"Share your Creation!" },
+		"share_link_copied":	{ "text":"Link copied to clipboard! Paste to use." },
+		"share_copy":			{ "text":"copy" },
+		
+		"infobar_id":			{ "text":"ID: {0}" }
+	}
+}

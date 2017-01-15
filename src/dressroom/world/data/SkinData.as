@@ -1,5 +1,6 @@
 package dressroom.world.data
 {
+	import com.fewfre.utils.Fewf;
 	import dressroom.data.*;
 	import flash.display.*;
 	import flash.geom.*;
@@ -24,28 +25,28 @@ package dressroom.world.data
 			_getDefaultHairFromID();
 			
 			// Head
-			classMap.T		= Main.assets.getLoadedClass( _getHeadFromID() );
+			classMap.T		= Fewf.assets.getLoadedClass( _getHeadFromID() );
 			// Torso / Pelvis
-			classMap.C		= Main.assets.getLoadedClass( "M_"+id+"_C"+(sex == SEX.FEMALE || isZombie ? "" : "2") );
+			classMap.C		= Fewf.assets.getLoadedClass( "M_"+id+"_C"+(sex == SEX.FEMALE || isZombie ? "" : "2") );
 			
 			// Upper Arms
-			classMap.BS		= Main.assets.getLoadedClass( "M_"+id+"_BS"+(sex == SEX.FEMALE || isZombie ? "" : "2") );
-			classMap.BI		= Main.assets.getLoadedClass( "M_"+id+"_BI" );
+			classMap.BS		= Fewf.assets.getLoadedClass( "M_"+id+"_BS"+(sex == SEX.FEMALE || isZombie ? "" : "2") );
+			classMap.BI		= Fewf.assets.getLoadedClass( "M_"+id+"_BI" );
 			// Hands
-			classMap.M1		= Main.assets.getLoadedClass( "M_"+id+"_M1" );
-			classMap.M2		= Main.assets.getLoadedClass( "M_"+id+"_M2" );
-			classMap.M3		= Main.assets.getLoadedClass( "M_"+id+"_M3" );
-			classMap.M4		= Main.assets.getLoadedClass( "M_"+id+"_M4" );
+			classMap.M1		= Fewf.assets.getLoadedClass( "M_"+id+"_M1" );
+			classMap.M2		= Fewf.assets.getLoadedClass( "M_"+id+"_M2" );
+			classMap.M3		= Fewf.assets.getLoadedClass( "M_"+id+"_M3" );
+			classMap.M4		= Fewf.assets.getLoadedClass( "M_"+id+"_M4" );
 			
 			// Upper Legs
-			classMap.JS1	= Main.assets.getLoadedClass( "M_"+id+"_JS1" );
-			classMap.JS2	= Main.assets.getLoadedClass( "M_"+id+"_JS2" );
+			classMap.JS1	= Fewf.assets.getLoadedClass( "M_"+id+"_JS1" );
+			classMap.JS2	= Fewf.assets.getLoadedClass( "M_"+id+"_JS2" );
 			// Lower Legs
-			classMap.JI1	= Main.assets.getLoadedClass( "M_"+id+"_JI1" );
-			classMap.JI2	= Main.assets.getLoadedClass( "M_"+id+"_JI2" );
+			classMap.JI1	= Fewf.assets.getLoadedClass( "M_"+id+"_JI1" );
+			classMap.JI2	= Fewf.assets.getLoadedClass( "M_"+id+"_JI2" );
 			// Feet
-			classMap.P1		= Main.assets.getLoadedClass( "M_"+id+"_P1" );
-			classMap.P2		= Main.assets.getLoadedClass( "M_"+id+"_P2" );
+			classMap.P1		= Fewf.assets.getLoadedClass( "M_"+id+"_P1" );
+			classMap.P2		= Fewf.assets.getLoadedClass( "M_"+id+"_P2" );
 			
 			if(sex) this.id += (sex == SEX.FEMALE ? "F" : "M");
 		}

@@ -249,20 +249,5 @@ package app.data
 				
 				return tPose;
 			}
-		
-		// Converts the image to a PNG bitmap and prompts the user to save.
-		public function saveMovieClipAsBitmap(pObj:DisplayObject, pName:String="character", pScale:Number=1) : void
-		{
-			if(!pObj){ return; }
-			
-			var tRect:flash.geom.Rectangle = pObj.getBounds(pObj);
-			var tBitmap:flash.display.BitmapData = new flash.display.BitmapData(tRect.width*pScale, tRect.height*pScale, true, 0xFFFFFF);
-			
-			var tMatrix:flash.geom.Matrix = new flash.geom.Matrix(1, 0, 0, 1, -tRect.left, -tRect.top);
-			tMatrix.scale(pScale, pScale);
-			
-			tBitmap.draw(pObj, tMatrix);
-			( new flash.net.FileReference() ).save( com.adobe.images.PNGEncoder.encode(tBitmap), pName+".png" );
-		}
 	}
 }

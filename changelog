@@ -1,3 +1,10 @@
+== V1.1 - 3 July 2017 ==
+- Renaming "dressroom" folder to "app"
+- Moving Main from ./src to ./src/app
+- Made Costumes a singleton, made Main.costumes non-static and private, and replace all instances of it to Costumes.instance.
+- Renamed some root level files to more common naming; changelog -> CHANGELOG and added TODO
+
+
 == V1.0 - 14 January 2017 ==
 - Using version numbers
 - Added localization support.

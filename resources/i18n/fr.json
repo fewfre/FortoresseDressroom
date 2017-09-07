@@ -1,0 +1,22 @@
+{
+	"defaultFont": "Verdana",
+	"defaultScale": 1,
+	"strings": {
+		"loading_progress":		{ "text":"{0}" },
+		"infobar_id":			{ "text":"ID: {0}" },
+		
+		"loading":				{ "text":"Items qui restent à charger: {0}" },
+		"loading_finished":		{ "text":"Chargement complet. Initialisation..." },
+		"btn_color_defaults":	{ "text":"Défauts" },
+		"share_header":			{ "text":"Partage ta Création!" },
+		"share_link_copied":	{ "text":"Lien copié au presse-papiers! Coller pour utiliser.", "scale":0.9 },
+		"share_copy":			{ "text":"Copier" },
+		"version":				{ "text":"Version: {0}" },
+		"translated_by":		{ "text":"Traduit par: Virus_code" },
+		
+		"tab_skins":			{ "text":"Peau" },
+		"tab_hair":				{ "text":"Cheveux", "scale":0.95 },
+		"tab_guns":				{ "text":"Armes" },
+		"tab_poses":			{ "text":"Pose" }
+	}
+}

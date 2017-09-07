@@ -131,123 +131,128 @@ package app.data
 		/****************************
 		* Color
 		*****************************/
-			public function copyColor(copyFromMC:MovieClip, copyToMC:MovieClip) : MovieClip {
-				if (copyFromMC == null || copyToMC == null) { return; }
-				var tChild1:*=null;
-				var tChild2:*=null;
-				var i:int = 0;
-				while (i < copyFromMC.numChildren)
+		public function copyColor(copyFromMC:MovieClip, copyToMC:MovieClip) : MovieClip {
+			if (copyFromMC == null || copyToMC == null) { return; }
+			var tChild1:*=null;
+			var tChild2:*=null;
+			var i:int = 0;
+			while (i < copyFromMC.numChildren)
+			{
+				tChild1 = copyFromMC.getChildAt(i);
+				tChild2 = copyToMC.getChildAt(i);
+				if (tChild1.name.indexOf("Couleur") == 0 && tChild1.name.length > 7)
 				{
-					tChild1 = copyFromMC.getChildAt(i);
-					tChild2 = copyToMC.getChildAt(i);
-					if (tChild1.name.indexOf("Couleur") == 0 && tChild1.name.length > 7)
-					{
-						tChild2.transform.colorTransform = tChild1.transform.colorTransform;
-					}
-					++i;
+					tChild2.transform.colorTransform = tChild1.transform.colorTransform;
 				}
-				return copyToMC;
+				++i;
 			}
+			return copyToMC;
+		}
 
-			public function colorDefault(pMC:MovieClip) : MovieClip {
-				if (pMC == null) { return; }
-				
-				var tChild:*=null;
-				var tHex:int=0;
-				var loc1:*=0;
-				while (loc1 < pMC.numChildren)
+		public function colorDefault(pMC:MovieClip) : MovieClip {
+			if (pMC == null) { return; }
+			
+			var tChild:*=null;
+			var tHex:int=0;
+			var loc1:*=0;
+			while (loc1 < pMC.numChildren)
+			{
+				tChild = pMC.getChildAt(loc1);
+				if (tChild.name.indexOf("Couleur") == 0 && tChild.name.length > 7)
 				{
-					tChild = pMC.getChildAt(loc1);
-					if (tChild.name.indexOf("Couleur") == 0 && tChild.name.length > 7)
-					{
-						tHex = int("0x" + tChild.name.substr(tChild.name.indexOf("_") + 1, 6));
+					tHex = int("0x" + tChild.name.substr(tChild.name.indexOf("_") + 1, 6));
+					applyColorToObject(tChild, tHex);
+				}
+				++loc1;
+			}
+			return pMC;
+		}
+		
+		// pData = { obj:DisplayObject, color:String OR int, ?swatch:int, ?name:String }
+		public function colorItem(pData:Object) : void {
+			if (pData.obj == null) { return; }
+			
+			var tHex:int = pData.color is Number ? pData.color : int("0x" + pData.color);
+			
+			var tChild:DisplayObject;
+			var i:int=0;
+			while (i < pData.obj.numChildren) {
+				tChild = pData.obj.getChildAt(i);
+				if (tChild.name == pData.name || (tChild.name.indexOf("Couleur") == 0 && tChild.name.length > 7)) {
+					if (!pData.swatch || pData.swatch == tChild.name.charAt(7)) {
 						applyColorToObject(tChild, tHex);
 					}
-					++loc1;
 				}
-				return pMC;
+				i++;
 			}
-			
-			// pData = { obj:DisplayObject, color:String OR int, ?swatch:int, ?name:String }
-			public function colorItem(pData:Object) : void {
-				if (pData.obj == null) { return; }
-				
-				var tHex:int = pData.color is Number ? pData.color : int("0x" + pData.color);
-				
-				var tChild:DisplayObject;
-				var i:int=0;
-				while (i < pData.obj.numChildren) {
-					tChild = pData.obj.getChildAt(i);
-					if (tChild.name == pData.name || (tChild.name.indexOf("Couleur") == 0 && tChild.name.length > 7)) {
-						if (!pData.swatch || pData.swatch == tChild.name.charAt(7)) {
-							applyColorToObject(tChild, tHex);
-						}
-					}
-					i++;
-				}
-			}
-			
-			// pColor is an int hex value. ex: 0x000000
-			public function applyColorToObject(pItem:DisplayObject, pColor:int) : void {
-				var tR:*=pColor >> 16 & 255;
-				var tG:*=pColor >> 8 & 255;
-				var tB:*=pColor & 255;
-				pItem.transform.colorTransform = new flash.geom.ColorTransform(tR / 128, tG / 128, tB / 128);
-			}
-			
-			public function getNumOfCustomColors(pMC:MovieClip) : int {
-				var tChild:*=null;
-				var num:int = 0;
-				var i:int = 0;
-				while (i < pMC.numChildren)
+		}
+		
+		// pColor is an int hex value. ex: 0x000000
+		public function applyColorToObject(pItem:DisplayObject, pColor:int) : void {
+			var tR:*=pColor >> 16 & 255;
+			var tG:*=pColor >> 8 & 255;
+			var tB:*=pColor & 255;
+			pItem.transform.colorTransform = new flash.geom.ColorTransform(tR / 128, tG / 128, tB / 128);
+		}
+		
+		public function getNumOfCustomColors(pMC:MovieClip) : int {
+			var tChild:*=null;
+			var num:int = 0;
+			var i:int = 0;
+			while (i < pMC.numChildren)
+			{
+				tChild = pMC.getChildAt(i);
+				if (tChild.name.indexOf("Couleur") == 0 && tChild.name.length > 7)
 				{
-					tChild = pMC.getChildAt(i);
-					if (tChild.name.indexOf("Couleur") == 0 && tChild.name.length > 7)
-					{
-						num++;
-					}
-					++i;
+					num++;
 				}
-				return num;
+				++i;
 			}
+			return num;
+		}
+		
+		public function getColoredItemImage(pData:ItemData) : MovieClip {
+			/*return colorItem({ obj:getItemImage(pData), colors:pData.colors });*/
+			return getItemImage(pData); // Colored items not supported
+		}
 		
 		/****************************
 		* Asset Creation
 		*****************************/
-			public function getItemImage(pData:ItemData) : MovieClip {
-				var tItem:MovieClip;
-				switch(pData.type) {
-					case ITEM.SKIN:
-						tItem = getDefaultPoseSetup({ skin:pData });
-						break;
-					case ITEM.POSE:
-						tItem = getDefaultPoseSetup({ pose:pData });
-						break;
-					/*case ITEM.SHIRT:
-					case ITEM.PANTS:
-					case ITEM.SHOES:
-						tItem = new Pose(poses[defaultPoseIndex]).apply({ items:[ pData ], removeBlanks:true });
-						break;*/
-					default:
-						tItem = new pData.itemClass();
-						colorDefault(tItem);
-						break;
-				}
-				return tItem;
+		public function getItemImage(pData:ItemData) : MovieClip {
+			var tItem:MovieClip;
+			switch(pData.type) {
+				case ITEM.SKIN:
+					tItem = getDefaultPoseSetup({ skin:pData });
+					break;
+				case ITEM.POSE:
+					tItem = getDefaultPoseSetup({ pose:pData });
+					break;
+				/*case ITEM.SHIRT:
+				case ITEM.PANTS:
+				case ITEM.SHOES:
+					tItem = new Pose(poses[defaultPoseIndex]).apply({ items:[ pData ], removeBlanks:true });
+					break;*/
+				default:
+					tItem = new pData.itemClass();
+					colorDefault(tItem);
+					break;
 			}
+			return tItem;
+		}
+		
+		// pData = { ?pose:ItemData, ?skin:SkinData }
+		public function getDefaultPoseSetup(pData:Object) : Pose {
+			var tPoseData = pData.pose ? pData.pose : poses[defaultPoseIndex];
+			var tSkinData = pData.skin ? pData.skin : skins[defaultSkinIndex];
 			
-			// pData = { ?pose:ItemData, ?skin:SkinData }
-			public function getDefaultPoseSetup(pData:Object) : Pose {
-				var tPoseData = pData.pose ? pData.pose : poses[defaultPoseIndex];
-				var tSkinData = pData.skin ? pData.skin : skins[defaultSkinIndex];
-				
-				tPose = new Pose(tPoseData);
-				tPose.apply({ items:[
-					tSkinData
-				] });
-				tPose.stopAtLastFrame();
-				
-				return tPose;
-			}
+			tPose = new Pose(tPoseData);
+			tPose.apply({ items:[
+				tSkinData
+			] });
+			tPose.stopAtLastFrame();
+			
+			return tPose;
+		}
 	}
 }

@@ -22,6 +22,9 @@
 		
 		"infobar_id":			{ "text":"ID: {0}" },
 		
+		"version":				{ "text":"Version: {0}" },
+		"translated_by":		{ "text":"Translated by: Your Name here (or remove/blank this line to not show)" },
+		
 		"loading":				{ "text":"Items left to load: {0}" },
 		"loading_finished":		{ "text":"Loading complete. Initializing..." },
 		"loading_progress":		{ "text":"{0}" }

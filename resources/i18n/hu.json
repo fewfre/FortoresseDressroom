@@ -1,0 +1,22 @@
+{
+	"defaultFont": "Verdana",
+	"defaultScale": 1,
+	"strings": {
+		"loading_progress":		{ "text":"{0}" },
+		"infobar_id":			{ "text":"ID: {0}" },
+		
+		"loading":				{ "text":"Betöltendő tételek száma: {0}" },
+		"loading_finished":		{ "text":"Betöltés sikeres. Indítás..." },
+		"btn_color_defaults":	{ "text":"Alapértelmezett" },
+		"share_header":			{ "text":"Oszd meg a kinézeted!" },
+		"share_link_copied":	{ "text":"Link a vágólapra másolva! Illeszd be a használathoz.", "scale":0.9 },
+		"share_copy":			{ "text":"másolás" },
+		"version":				{ "text":"Verzió: {0}" },
+		"translated_by":		{ "text":"Fordította: Fire_tiger" },
+		
+		"tab_skins":			{ "text":"Bőr" },
+		"tab_hair":				{ "text":"Haj" },
+		"tab_guns":				{ "text":"Fegyver" },
+		"tab_poses":			{ "text":"Póz" }
+	}
+}

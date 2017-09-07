@@ -1,0 +1,22 @@
+{
+	"defaultFont": "Verdana",
+	"defaultScale": 1,
+	"strings": {
+		"loading_progress":		{ "text":"{0}" },
+		"infobar_id":			{ "text":"هوية: {0}" },
+		
+		"loading":				{ "text":"العناصر المتبقية للتحميل: {0}" },
+		"loading_finished":		{ "text":"اكتمل التحميل. جار التهيئة..." },
+		"btn_color_defaults":	{ "text":"العادية" },
+		"share_header":			{ "text":"شارك معنا ابداعك !" },
+		"share_link_copied":	{ "text":"تم نسخ الرابط إلى الحافظة! الصق للاستخدام." },
+		"share_copy":			{ "text":"نسخ" },
+		"version":				{ "text":"الإصدار: {0}" },
+		"translated_by":		{ "text":"الترجمة من طرف: Hmiida" },
+		
+		"tab_skins":			{ "text":"الجلد" },
+		"tab_hair":				{ "text":"الشعر" },
+		"tab_guns":				{ "text":"الأسلحة" },
+		"tab_poses":			{ "text":"الوضعية" }
+	}
+}

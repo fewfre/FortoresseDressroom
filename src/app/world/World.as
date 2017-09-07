@@ -8,6 +8,7 @@ package app.world
 
 	import app.ui.*;
 	import app.ui.panes.*;
+	import app.ui.lang.*;
 	import app.ui.buttons.*;
 	import app.data.*;
 	import app.world.data.*;
@@ -35,12 +36,14 @@ package app.world
 		internal var shopTabs		: ShopTabContainer;
 		internal var _toolbox		: Toolbox;
 		internal var linkTray		: LinkTray;
+		internal var _langScreen	: LangScreen;
 
 		internal var currentlyColoringType:String="";
 		internal var configCurrentlyColoringType:String;
 		
 		// Constants
 		public static const COLOR_PANE_ID = "colorPane";
+		public static const COLOR_FINDER_PANE_ID = "colorFinderPane";
 		
 		// Constructor
 		public function World(pStage:Stage) {
@@ -78,7 +81,7 @@ package app.world
 			tShop.drawSimpleGradient(ConstantsApp.COLOR_TRAY_GRADIENT, 15, ConstantsApp.COLOR_TRAY_B_1, ConstantsApp.COLOR_TRAY_B_2, ConstantsApp.COLOR_TRAY_B_3);
 			_paneManager = tShop.addChild(new PaneManager());
 			
-			this.shopTabs = addChild(new ShopTabContainer({ x:380, y:10, width:60, height:ConstantsApp.APP_HEIGHT,
+			this.shopTabs = addChild(new ShopTabContainer({ x:375, y:10, width:70, height:ConstantsApp.APP_HEIGHT,
 				tabs:[
 					{ text:"tab_skins", event:ITEM.SKIN },
 					{ text:"tab_hair", event:ITEM.HAIR },
@@ -94,8 +97,20 @@ package app.world
 				onSave:_onSaveClicked, onAnimate:_onPlayerAnimationToggle, onRandomize:_onRandomizeDesignClicked,
 				onShare:_onShareButtonClicked, onScale:_onScaleSliderChange
 			}));
+			
+			var tLangButton = addChild(new LangButton({ x:22, y:pStage.stageHeight-17, width:30, height:25, origin:0.5 }));
+			tLangButton.addEventListener(ButtonBase.CLICK, _onLangButtonClicked);
+			
+			addChild(new AppInfoBox({ x:tLangButton.x+(tLangButton.Width*0.5)+(25*0.5)+2, y:pStage.stageHeight-17 }));
+			
+			/****************************
+			* Screens
+			*****************************/
 			linkTray = new LinkTray({ x:pStage.stageWidth * 0.5, y:pStage.stageHeight * 0.5 });
 			linkTray.addEventListener(LinkTray.CLOSE, _onShareTrayClosed);
+			
+			_langScreen = new LangScreen({  });
+			_langScreen.addEventListener(LangScreen.CLOSE, _onLangScreenClosed);
 
 			/****************************
 			* Create tabs and panes
@@ -106,6 +121,9 @@ package app.world
 			tPane.addEventListener(ColorPickerTabPane.EVENT_COLOR_PICKED, _onColorPickChanged);
 			tPane.addEventListener(ColorPickerTabPane.EVENT_DEFAULT_CLICKED, _onDefaultsButtonClicked);
 			tPane.addEventListener(ColorPickerTabPane.EVENT_EXIT, _onColorPickerBackClicked);
+			
+			tPane = _paneManager.addPane(COLOR_FINDER_PANE_ID, new ColorFinderPane({ }));
+			tPane.addEventListener(ColorPickerTabPane.EVENT_EXIT, _onColorFinderBackClicked);
 
 			// Create the panes
 			var tTypes = [ ITEM.SKIN, ITEM.HAIR, ITEM.OBJECT, ITEM.POSE ], tData:ItemData, tType:String;
@@ -129,11 +147,14 @@ package app.world
 
 		private function _setupPane(pType:String) : TabPane {
 			var tPane:TabPane = new TabPane();
-			tPane.addInfoBar( new ShopInfoBar({}) );
+			tPane.addInfoBar( new ShopInfoBar({ showEyeDropButton:pType!=ITEM.POSE }) );
 			_setupPaneButtons(tPane, costumes.getArrayByType(pType));
 			tPane.infoBar.colorWheel.addEventListener(ButtonBase.CLICK, function(){ _colorButtonClicked(pType); });
 			tPane.infoBar.imageCont.addEventListener(MouseEvent.CLICK, function(){ _removeItem(pType); });
 			tPane.infoBar.refreshButton.addEventListener(ButtonBase.CLICK, function(){ _randomItemOfType(pType); });
+			if(tPane.infoBar.eyeDropButton) {
+				tPane.infoBar.eyeDropButton.addEventListener(ButtonBase.CLICK, function(){ _eyeDropButtonClicked(pType); });
+			}
 			return tPane;
 		}
 
@@ -211,8 +232,8 @@ package app.world
 				tData = tItemArray[pEvent.data.id];
 				setCurItemID(tType, tButton.id);
 				this.character.setItemData(tData);
-
-				tInfoBar.addInfo( tData, costumes.getItemImage(tData) );
+				
+				tInfoBar.addInfo( tData, costumes.getColoredItemImage(tData) );
 				tInfoBar.showColorWheel(costumes.getNumOfCustomColors(tButton.Image) > 0);
 			} else {
 				_removeItem(tType);
@@ -246,6 +267,7 @@ package app.world
 		}
 
 		private function _randomItemOfType(pType:String) : void {
+			if(getInfoBarByType(pType).isRefreshLocked) { return; }
 			var tButtons = getButtonArrayByType(pType);
 			var tLength = tButtons.length; //if(pType == ITEM.SKIN) { /* Don't select "transparent" */ tLength--; }
 			tButtons[ Math.floor(Math.random() * tLength) ].toggleOn();
@@ -266,6 +288,15 @@ package app.world
 
 		private function _onShareTrayClosed(pEvent:Event) : void {
 			removeChild(linkTray);
+		}
+
+		private function _onLangButtonClicked(pEvent:Event) : void {
+			_langScreen.open();
+			addChild(_langScreen);
+		}
+
+		private function _onLangScreenClosed(pEvent:Event) : void {
+			removeChild(_langScreen);
 		}
 
 		//{REGION Get TabPane data
@@ -330,6 +361,22 @@ package app.world
 
 			private function _onColorPickerBackClicked(pEvent:Event):void {
 				_paneManager.openPane(_paneManager.getPane(COLOR_PANE_ID).infoBar.data.type);
+			}
+
+			private function _eyeDropButtonClicked(pType:String) : void {
+				if(this.character.getItemData(pType) == null) { return; }
+
+				var tData:ItemData = getInfoBarByType(pType).data;
+				var tItem:MovieClip = costumes.getColoredItemImage(tData);
+				var tItem2:MovieClip = costumes.getColoredItemImage(tData);
+				_paneManager.getPane(COLOR_FINDER_PANE_ID).infoBar.addInfo( tData, tItem );
+				this.currentlyColoringType = pType;
+				_paneManager.getPane(COLOR_FINDER_PANE_ID).setItem(tItem2);
+				_paneManager.openPane(COLOR_FINDER_PANE_ID);
+			}
+
+			private function _onColorFinderBackClicked(pEvent:Event):void {
+				_paneManager.openPane(_paneManager.getPane(COLOR_FINDER_PANE_ID).infoBar.data.type);
 			}
 		//}END Color Tab
 	}

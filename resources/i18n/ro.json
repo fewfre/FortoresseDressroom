@@ -1,0 +1,22 @@
+{
+	"defaultFont": "Verdana",
+	"defaultScale": 1,
+	"strings": {
+		"loading_progress":		{ "text":"{0}" },
+		"infobar_id":			{ "text":"ID: {0}" },
+		
+		"loading":				{ "text":"Elementele rămase pentru încărcare: {0}" },
+		"loading_finished":		{ "text":"Încărcare completă. Inițializează ..." },
+		"btn_color_defaults":	{ "text":"Valori prestabilite", "scale":0.9 },
+		"share_header":			{ "text":"Împărtășește-ți creația!" },
+		"share_link_copied":	{ "text":"Link copiat in clipboard! Lipiți-l pentru utilizare.", "scale":0.95 },
+		"share_copy":			{ "text":"Copiează" },
+		"version":				{ "text":"Versiune: {0}" },
+		"translated_by":		{ "text":"Translated by: Sky_dreams" },
+		
+		"tab_skins":			{ "text":"Piele" },
+		"tab_hair":				{ "text":"Păr" },
+		"tab_guns":				{ "text":"Arme" },
+		"tab_poses":			{ "text":"Poziție" }
+	}
+}

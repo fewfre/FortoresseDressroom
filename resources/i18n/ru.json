@@ -1,0 +1,22 @@
+{
+	"defaultFont": "Verdana",
+	"defaultScale": 1,
+	"strings": {
+		"loading_progress":		{ "text":"{0}" },
+		"infobar_id":			{ "text":"ID: {0}" },
+		
+		"loading":				{ "text":"Предметов осталось для загрузки: {0}" },
+		"loading_finished":		{ "text":"Загрузка завершена. Инициализация..." },
+		"btn_color_defaults":	{ "text":"По умолчанию" },
+		"share_header":			{ "text":"По делиться своей работой!" },
+		"share_link_copied":	{ "text":"Ссылка скопирована в буфер обмена! Вставьте для использования.", "scale":0.6 },
+		"share_copy":			{ "text":"Копия" },
+		"version":				{ "text":"Версия: {0}" },
+		"translated_by":		{ "text":"Переведено: Cakeslices" },
+		
+		"tab_skins":			{ "text":"Кожа" },
+		"tab_hair":				{ "text":"Волосы" },
+		"tab_guns":				{ "text":"Oружие" },
+		"tab_poses":			{ "text":"Поза" }
+	}
+}

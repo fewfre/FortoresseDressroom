@@ -1,0 +1,22 @@
+{
+	"defaultFont": "Verdana",
+	"defaultScale": 1,
+	"strings": {
+		"loading_progress":		{ "text":"{0}" },
+		"infobar_id":			{ "text":"ID: {0}" },
+		
+		"loading":				{ "text":"Items Restliche Downloads: {0}" },
+		"loading_finished":		{ "text":"Fertig geladen. Initialisieren..." },
+		"btn_color_defaults":	{ "text":"Vorgaben" },
+		"share_header":			{ "text":"Teile deine Kreation!" },
+		"share_link_copied":	{ "text":"Link in Zwischenablage gelegt!" },
+		"share_copy":			{ "text":"Kopieren" },
+		"version":				{ "text":"Version: {0}" },
+		"translated_by":		{ "text":"Übersetzt von: Virus_Code" },
+		
+		"tab_skins":			{ "text":"Haut" },
+		"tab_hair":				{ "text":"Frisur" },
+		"tab_guns":				{ "text":"Gewehre", "scale":0.95 },
+		"tab_poses":			{ "text":"Haltung" }
+	}
+}

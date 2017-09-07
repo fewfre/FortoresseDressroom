@@ -1,0 +1,22 @@
+{
+	"defaultFont": "Verdana",
+	"defaultScale": 1,
+	"strings": {
+		"loading_progress":		{ "text":"{0}" },
+		"infobar_id":			{ "text":"ID: {0}" },
+		
+		"loading":				{ "text":"Itens que faltam carregar: {0}" },
+		"loading_finished":		{ "text":"Carregamento completo. Inicializando..." },
+		"btn_color_defaults":	{ "text":"Padrões" },
+		"share_header":			{ "text":"Compartilhe sua criação!" },
+		"share_link_copied":	{ "text":"Link copiado. Cole para usá-lo." },
+		"share_copy":			{ "text":"Copiar" },
+		"version":				{ "text":"Versão: {0}" },
+		"translated_by":		{ "text":"Traduzido por: Buwho" },
+		
+		"tab_skins":			{ "text":"Skin" },
+		"tab_hair":				{ "text":"Penteado", "scale":0.95 },
+		"tab_guns":				{ "text":"Armas" },
+		"tab_poses":			{ "text":"Pose" }
+	}
+}

@@ -58,7 +58,8 @@ package app.world.elements
 			
 			// This works because poses, skins, and items have a group of letters/numbers that let each other know they should be grouped together.
 			// For example; the "head" of a pose is T, as is the skin's head, hats, and hair. Thus they all go onto same area of the skin.
-			for(var i:int = 0; i < _pose.numChildren; i++) {
+			// Loop in reverse so unused parts can be removed if required
+			for(var i:int = _pose.numChildren-1; i >= 0; i--) {
 				tChild = _pose.getChildAt(i);
 				tItemsOnChild = 0;
 				
@@ -68,25 +69,14 @@ package app.world.elements
 						tItemsOnChild++;
 					}
 				}
-				if(tItemsOnChild == 0) {
-					tChild.enabled = false; // Hacky way to mark the child as "unused" for use in _removeUnusedParts().
+				if(pData.removeBlanks && tItemsOnChild == 0) {
+					_pose.removeChildAt(i);
 				}
 				
 				part = null;
 			}
-			if(pData.removeBlanks) {
-				_removeUnusedParts();
-			}
 			
 			return this;
-		}
-		
-		private function _removeUnusedParts() {
-			i = _pose.numChildren;
-			while(i > 0) { i--;
-				tChild = _pose.getChildAt(i);
-				if(!tChild.enabled) { _pose.removeChildAt(i); }// else { var ttt = new $ColorWheel(); ttt.scaleX = ttt.scaleY = 0.1; tChild.addChild(ttt); }
-			}
 		}
 		
 		private function _addToPoseIfCan(pSkinPart:MovieClip, pData:ItemData, pID:String) : MovieClip {

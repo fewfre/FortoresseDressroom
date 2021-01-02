@@ -20,7 +20,6 @@
 		- I18n & TextBase updated to allow for changing language during runtime.
 		- You can now change language during run-time
 	- V1.6
-		- Share link feature added / finished.
 		- Color finder feature added for items.
 		- [bug] If you selected an item + colored it, selected something else, and then selected it again, the infobar image showed the default image.
 		- [bug] Downloading a colored image (vs whole mouse) didn't save it colored.

@@ -21,10 +21,19 @@ package app
 		// Constructor
 		public function Main() {
 			super();
-			Fewf.init(stage);
+			
+			if (stage) {
+				this._start();
+			} else {
+				addEventListener(Event.ADDED_TO_STAGE, this._start);
+			}
+		}
+		
+		private function _start(...args:*) {
+			Fewf.init(stage, this.loaderInfo.parameters.swfUrlBase);
 			
 			stage.align = StageAlign.TOP;
-			stage.scaleMode = StageScaleMode.NO_SCALE;
+			stage.scaleMode = StageScaleMode.SHOW_ALL;
 			stage.frameRate = 10;
 
 			BrowserMouseWheelPrevention.init(stage);
@@ -36,7 +45,7 @@ package app
 		
 		private function _startPreload() : void {
 			Fewf.assets.load([
-				"resources/config.json",
+				Fewf.swfUrlBase+"resources/config.json",
 			]);
 			Fewf.assets.addEventListener(AssetManager.LOADING_FINISHED, _onPreloadComplete);
 		}
@@ -44,14 +53,14 @@ package app
 		private function _onPreloadComplete(event:Event) : void {
 			Fewf.assets.removeEventListener(AssetManager.LOADING_FINISHED, _onPreloadComplete);
 			_config = Fewf.assets.getData("config");
-			_defaultLang = _getDefaultLang(_config.languages.default);
+			_defaultLang = _getDefaultLang(_config.languages["default"]);
 			
 			_startInitialLoad();
 		}
 		
 		private function _startInitialLoad() : void {
 			Fewf.assets.load([
-				"resources/i18n/"+_defaultLang+".json",
+				Fewf.swfUrlBase+"resources/i18n/"+_defaultLang+".json",
 			]);
 			Fewf.assets.addEventListener(AssetManager.LOADING_FINISHED, _onInitialLoadComplete);
 		}
@@ -66,10 +75,10 @@ package app
 		// Start main load
 		private function _startLoad() : void {
 			Fewf.assets.load([
-				["resources/interface.swf", { useCurrentDomain:true }],
-				"resources/flags.swf",
+				[Fewf.swfUrlBase+"resources/interface.swf", { useCurrentDomain:true }],
+				Fewf.swfUrlBase+"resources/flags.swf",
 				// Game assets
-				"resources/resources.swf",
+				Fewf.swfUrlBase+"resources/resources.swf",
 			]);
 			Fewf.assets.addEventListener(AssetManager.LOADING_FINISHED, _onLoadComplete);
 		}

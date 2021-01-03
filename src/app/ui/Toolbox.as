@@ -7,13 +7,14 @@ package app.ui
 	import app.ui.buttons.*;
 	import flash.display.*;
 	import flash.net.*;
+	import ext.ParentApp;
 	
 	public class Toolbox extends MovieClip
 	{
 		// Storage
 		private var _downloadTray	: FrameBase;
 		private var _bg				: RoundedRectangle;
-		public var scaleSlider		: FancySlider;
+		public var scaleSlider		: Object;//FancySlider
 		public var animateButton	: SpriteButton;
 		public var imgurButton		: SpriteButton;
 		
@@ -54,13 +55,15 @@ package app.ui
 			btn.addEventListener(ButtonBase.CLICK, pData.onShare);
 			tButtonsOnLeft++;
 			
-			imgurButton = btn = tTray.addChild(new SpriteButton({ x:tX+tButtonXInc*tButtonsOnLeft, y:tY, width:tButtonSize, height:tButtonSize, obj_scale:0.45, obj:new $ImgurIcon(), origin:0.5 }));
-			var tCharacter = pData.character;
-			btn.addEventListener(ButtonBase.CLICK, function(e:*){
-				ImgurApi.uploadImage(tCharacter);
-				imgurButton.disable();
-			});
-			tButtonsOnLeft++;
+			if(!Fewf.isExternallyLoaded) {
+				imgurButton = btn = tTray.addChild(new SpriteButton({ x:tX+tButtonXInc*tButtonsOnLeft, y:tY, width:tButtonSize, height:tButtonSize, obj_scale:0.45, obj:new $ImgurIcon(), origin:0.5 }));
+				var tCharacter = pData.character;
+				btn.addEventListener(ButtonBase.CLICK, function(e:*){
+					ImgurApi.uploadImage(tCharacter);
+					imgurButton.disable();
+				});
+				tButtonsOnLeft++;
+			}
 			
 			// ### Right Side Buttons ###
 			tX = tTrayWidth*0.5-(tButtonSize*0.5 + tButtonSizeSpace);
@@ -79,18 +82,31 @@ package app.ui
 			*********************/
 			var tTotalButtons = tButtonsOnLeft+tButtonOnRight;
 			var tSliderWidth = tTrayWidth - tButtonXInc*(tTotalButtons) - 20;
-			scaleSlider = tTray.addChild(new FancySlider({
+			var sliderProps = {
 				x:-tSliderWidth*0.5+(tButtonXInc*((tButtonsOnLeft-tButtonOnRight)*0.5))-1, y:tY,
 				value: pData.character.outfit.scaleX*10, min:10, max:40, width:tSliderWidth
-			}));
-			scaleSlider.addEventListener(FancySlider.CHANGE, pData.onScale);
+			};
+			if(Fewf.isExternallyLoaded) {
+				scaleSlider = tTray.addChild(ParentApp.newFancySlider(sliderProps));
+				scaleSlider.addEventListener(FancySlider.CHANGE, pData.onScale);
+			} else {
+				scaleSlider = tTray.addChild(new FancySlider(sliderProps));
+				scaleSlider.addEventListener(FancySlider.CHANGE, pData.onScale);
+			}
 			
-			pData = null;
+			/****************************
+			* Selectable text field
+			*****************************/
+			if(Fewf.isExternallyLoaded) {
+				addChild(new PasteShareCodeInput({ x:18, y:33, onChange:pData.onShareCodeEntered }));
+			}
 			
 			/********************
 			* Events
 			*********************/
 			Fewf.dispatcher.addEventListener(ImgurApi.EVENT_DONE, _onImgurDone);
+			
+			pData = null;
 		}
 		
 		public function toggleAnimateButtonAsset(pOn:Boolean) : void {

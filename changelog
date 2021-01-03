@@ -1,3 +1,7 @@
+== V1.4 - 2 December 2020 ==
+- Added support for being externally loaded by AIR app
+
+
 == V1.3 - 6 September 2017 ==
 - Adding various languages
 - Moved over TFM Dressroom rework:

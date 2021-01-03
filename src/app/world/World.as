@@ -59,14 +59,16 @@ package app.world
 			* Create Character
 			*****************************/
 			var parms:flash.net.URLVariables = null;
-			try {
-				var urlPath:String = ExternalInterface.call("eval", "window.location.href");
-				if(urlPath && urlPath.indexOf("?") > 0) {
-					urlPath = urlPath.substr(urlPath.indexOf("?") + 1, urlPath.length);
-					parms = new flash.net.URLVariables();
-					parms.decode(urlPath);
-				}
-			} catch (error:Error) { };
+			if(!Fewf.isExternallyLoaded) {
+				try {
+					var urlPath:String = ExternalInterface.call("eval", "window.location.href");
+					if(urlPath && urlPath.indexOf("?") > 0) {
+						urlPath = urlPath.substr(urlPath.indexOf("?") + 1, urlPath.length);
+						parms = new flash.net.URLVariables();
+						parms.decode(urlPath);
+					}
+				} catch (error:Error) { };
+			}
 
 			this.character = addChild(new Character({ x:180, y:375,
 				skin:costumes.skins[costumes.defaultSkinIndex],
@@ -95,7 +97,8 @@ package app.world
 			_toolbox = addChild(new Toolbox({
 				x:188, y:28, character:character,
 				onSave:_onSaveClicked, onAnimate:_onPlayerAnimationToggle, onRandomize:_onRandomizeDesignClicked,
-				onShare:_onShareButtonClicked, onScale:_onScaleSliderChange
+				onShare:_onShareButtonClicked, onScale:_onScaleSliderChange,
+				onShareCodeEntered:_onShareCodeEntered
 			}));
 			
 			var tLangButton = addChild(new LangButton({ x:22, y:pStage.stageHeight-17, width:30, height:25, origin:0.5 }));
@@ -198,6 +201,35 @@ package app.world
 			character.scale = _toolbox.scaleSlider.getValueAsScale();
 		}
 
+		private function _onShareCodeEntered(pCode:String, pProgressCallback:Function):void {
+			if(!pCode || pCode == "") { return; pProgressCallback("placeholder"); }
+			if(pCode.indexOf("?") > -1) {
+				pCode = pCode.substr(pCode.indexOf("?") + 1, pCode.length);
+			}
+			
+			try {
+				var params = new flash.net.URLVariables();
+				params.decode(pCode);
+				
+				// First remove old stuff to prevent conflicts
+				for each(var tItem in ITEM.LAYERING) { _removeItem(tItem); }
+				_removeItem(ITEM.POSE);
+				
+				// Now update pose
+				character.parseParams(params);
+				character.updatePose();
+				
+				// now update the infobars
+				_updateUIBasedOnCharacter();
+				
+				// Now tell code box that we are done
+				pProgressCallback("success");
+			}
+			catch (error:Error) {
+				pProgressCallback("invalid");
+			};
+		}
+
 		private function _onPlayerAnimationToggle(pEvent:Event):void {
 			character.animatePose = !character.animatePose;
 			if(character.animatePose) {
@@ -210,6 +242,23 @@ package app.world
 
 		private function _onSaveClicked(pEvent:Event) : void {
 			FewfDisplayUtils.saveAsPNG(this.character, "character");
+		}
+
+		// Note: does not automatically de-select previous buttons / infobars; do that before calling this
+		// This function is required when setting data via parseParams
+		private function _updateUIBasedOnCharacter() : void {
+			var tPane:TabPane, tData:ItemData, tType:String;
+			var tTypes = [ ITEM.SKIN, ITEM.HAIR, ITEM.OBJECT, ITEM.POSE ], tData:ItemData, tType:String;
+			for(var i:int = 0; i < tTypes.length; i++) { tType = tTypes[i];
+				tPane = getTabByType(tType);
+				
+				// Based on what the character is wearing at start, toggle on the appropriate buttons.
+				tData = character.getItemData(tType);
+				if(tData) {
+					var tIndex:int = FewfUtils.getIndexFromArrayWithKeyVal(costumes.getArrayByType(tType), "id", tData.id);
+					tPane.buttons[ tIndex ].toggleOn();
+				}
+			}
 		}
 
 		private function _onItemToggled(pEvent:FewfEvent) : void {
@@ -276,11 +325,15 @@ package app.world
 		private function _onShareButtonClicked(pEvent:Event) : void {
 			var tURL = "";
 			try {
-				tURL = ExternalInterface.call("eval", "window.location.origin+window.location.pathname");
-				tURL += "?"+this.character.getParams();
+				if(Fewf.isExternallyLoaded) {
+					tURL = this.character.getParams();
+				} else {
+					tURL = ExternalInterface.call("eval", "window.location.origin+window.location.pathname");
+					tURL += "?"+this.character.getParams();
+				}
 			} catch (error:Error) {
 				tURL = "<error creating link>";
-			};
+			}
 
 			linkTray.open(tURL);
 			addChild(linkTray);

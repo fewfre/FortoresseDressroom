@@ -17,7 +17,7 @@ package app.data
 			return _instance;
 		}
 		
-		private const _MAX_COSTUMES_TO_CHECK_TO:Number = 250;
+		private const _MAX_COSTUMES_TO_CHECK_TO:Number = 50;
 		
 		public var hair:Array;
 		public var objects:Array;
@@ -52,10 +52,10 @@ package app.data
 					this.skins.push( new SkinData( i, SEX.MALE ) );
 				}
 			}
-			this.defaultSkinIndex = FewfUtils.getFromArrayWithKeyVal(this.skins, "id", ConstantsApp.DEFAULT_SKIN_ID);
+			this.defaultSkinIndex = FewfUtils.getIndexFromArrayWithKeyVal(this.skins, "id", ConstantsApp.DEFAULT_SKIN_ID);
 			
 			this.poses = _setupCostumeArray({ base:"Anim_", type:ITEM.POSE });
-			this.defaultPoseIndex = FewfUtils.getFromArrayWithKeyVal(this.poses, "id", ConstantsApp.DEFAULT_POSE_ID);
+			this.defaultPoseIndex = FewfUtils.getIndexFromArrayWithKeyVal(this.poses, "id", ConstantsApp.DEFAULT_POSE_ID);
 		}
 		
 		// pData = { base:String, type:String, after:String, pad:int, map:Array, sex:Boolean, itemClassToClassMap:String OR Array }

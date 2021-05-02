@@ -132,7 +132,7 @@ package app.data
 		* Color
 		*****************************/
 		public function copyColor(copyFromMC:MovieClip, copyToMC:MovieClip) : MovieClip {
-			if (copyFromMC == null || copyToMC == null) { return; }
+			if (copyFromMC == null || copyToMC == null) { return null; }
 			var tChild1:*=null;
 			var tChild2:*=null;
 			var i:int = 0;
@@ -150,7 +150,7 @@ package app.data
 		}
 
 		public function colorDefault(pMC:MovieClip) : MovieClip {
-			if (pMC == null) { return; }
+			if (pMC == null) { return null; }
 			
 			var tChild:*=null;
 			var tHex:int=0;
@@ -246,7 +246,7 @@ package app.data
 			var tPoseData = pData.pose ? pData.pose : poses[defaultPoseIndex];
 			var tSkinData = pData.skin ? pData.skin : skins[defaultSkinIndex];
 			
-			tPose = new Pose(tPoseData);
+			var tPose = new Pose(tPoseData);
 			tPose.apply({ items:[
 				tSkinData
 			] });

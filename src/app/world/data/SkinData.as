@@ -12,9 +12,10 @@ package app.world.data
 		public var isZombie:Boolean;
 		
 		// Constructor
-		public function SkinData(pID:String, pSex:String) {
-			super({ id:pID, type:ITEM.SKIN, sex:pSex });
+		public function SkinData(pID:int, pSex:String) {
+			super({ id:""+pID, type:ITEM.SKIN, sex:pSex });
 			
+			var id = pID;
 			isZombie = (id <= 15 && id >= 11) || id == 7;
 			if(isZombie) { sex = (id <= 15 && id >= 13) ? SEX.MALE : SEX.FEMALE; }
 			
@@ -116,7 +117,7 @@ package app.world.data
 				case 23:tHairID = 23; break;
 				case 24:tHairID = 24; break;
 			}
-			hair = Costumes.instance.getItemFromTypeID(ITEM.HAIR, tHairID);
+			hair = Costumes.instance.getItemFromTypeID(ITEM.HAIR, ""+tHairID);
 		}
 	}
 }

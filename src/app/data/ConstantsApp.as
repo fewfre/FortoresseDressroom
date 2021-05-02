@@ -12,7 +12,7 @@ package app.data
 		/****************************
 		* General
 		*****************************/
-		public static const VERSION					: String = "1.5";
+		public static const VERSION					: String = "1.5b";
 		public static const SOURCE_URL				: String = "https://github.com/fewfre/FortoresseDressroom";
 		
 		public static const DEFAULT_SKIN_ID			: String = "0F";

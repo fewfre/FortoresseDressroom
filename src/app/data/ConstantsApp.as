@@ -12,8 +12,8 @@ package app.data
 		/****************************
 		* General
 		*****************************/
-		public static const VERSION					: String = "1.5b";
-		public static const SOURCE_URL				: String = "https://github.com/fewfre/FortoresseDressroom";
+		public static const VERSION					: String = "1.6";
+		public static const SOURCE_URL				: String = "https://github.com/fewfre/FortoresseDressroom/blob/master/changelog";
 		
 		public static const DEFAULT_SKIN_ID			: String = "0F";
 		public static const DEFAULT_POSE_ID			: int = 11;

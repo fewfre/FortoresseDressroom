@@ -102,6 +102,7 @@ package app.ui.lang
 		
 		private function _onLanguageClicked(pEvent:FewfEvent) : void {
 			var tLangData = pEvent.data;
+			Fewf.sharedObject.setData("lang", tLangData.code);
 			_close();
 			if(Fewf.assets.getData(tLangData.code)) {
 				Fewf.i18n.parseFile(tLangData.code, Fewf.assets.getData(tLangData.code));

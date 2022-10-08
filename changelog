@@ -1,6 +1,13 @@
+== V1.6 - 7 October 2022 ==
+- Manually selecting a language will now cause the app to remember it the next time it is opened (request by Zelenpixel#9767)
+- Back button added when in downloadable app
+- Increased button size for guns
+
+
 == V1.5b - 1 May 2021 ==
 - Randomize button icon changed to dice
 - Lock icon on infobar now disables randomize button to make it's purpose clearer
+
 
 == V1.5 - 4 January 2021 ==
 - Changing default pose to match that for in-game shop

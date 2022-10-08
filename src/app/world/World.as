@@ -168,7 +168,9 @@ package app.world
 			var scale = 1;
 			if(tType == ITEM.SKIN || tType == ITEM.POSE) {
 					buttonPerRow = 4;
-					scale = 1;
+			}
+			else if(tType == ITEM.OBJECT) {
+					buttonPerRow = 5;
 			}
 
 			var grid:Grid = pPane.grid;

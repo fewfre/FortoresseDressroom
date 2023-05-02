@@ -1,3 +1,8 @@
+== V1.6b - 1 May 2023 ==
+- [Bug] Clicking scale slider will no longer prevent left/right arrow keys from traversing item grid.
+- Scale slider code polished - track hitbox increased & clicking anywhere on track now starts drag.
+
+
 == V1.6 - 7 October 2022 ==
 - Manually selecting a language will now cause the app to remember it the next time it is opened (request by Zelenpixel#9767)
 - Back button added when in downloadable app

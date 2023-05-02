@@ -14,7 +14,7 @@ package app.ui
 		// Storage
 		private var _downloadTray	: FrameBase;
 		private var _bg				: RoundedRectangle;
-		public var scaleSlider		: Object;//FancySlider
+		public var scaleSlider		: FancySlider
 		public var animateButton	: SpriteButton;
 		public var imgurButton		: SpriteButton;
 		
@@ -80,19 +80,13 @@ package app.ui
 			/********************
 			* Scale slider
 			*********************/
-			var tTotalButtons = tButtonsOnLeft+tButtonOnRight;
-			var tSliderWidth = tTrayWidth - tButtonXInc*(tTotalButtons) - 20;
-			var sliderProps = {
-				x:-tSliderWidth*0.5+(tButtonXInc*((tButtonsOnLeft-tButtonOnRight)*0.5))-1, y:tY,
-				value: pData.character.outfit.scaleX*10, min:10, max:40, width:tSliderWidth
-			};
-			if(Fewf.isExternallyLoaded) {
-				scaleSlider = tTray.addChild(ParentApp.newFancySlider(sliderProps));
-				scaleSlider.addEventListener(FancySlider.CHANGE, pData.onScale);
-			} else {
-				scaleSlider = tTray.addChild(new FancySlider(sliderProps));
-				scaleSlider.addEventListener(FancySlider.CHANGE, pData.onScale);
-			}
+			var tTotalButtons:Number = tButtonsOnLeft+tButtonOnRight;
+			var tSliderWidth:Number = tTrayWidth - tButtonXInc*(tTotalButtons) - 20;
+			tX = -tSliderWidth*0.5+(tButtonXInc*((tButtonsOnLeft-tButtonOnRight)*0.5))-1;
+			scaleSlider = new FancySlider(tSliderWidth).setXY(tX, tY)
+				.setSliderParams(1, 4, pData.character.outfit.scaleX)
+				.appendTo(tTray);
+			scaleSlider.addEventListener(FancySlider.CHANGE, pData.onScale);
 			
 			/****************************
 			* Selectable text field

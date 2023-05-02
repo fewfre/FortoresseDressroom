@@ -42,7 +42,7 @@ package app.ui
 			data = null;
 			
 			imageCont = addChild(new RoundedRectangle({ x:0, y:0, width:50, height:50 }));
-			imageCont.draw(0x6A7495, 15, 0x5d7d90, 0x11171c, 0x3c5064);
+			imageCont.draw(ConstantsApp.APP_BG_COLOR, 15, 0x5d7d90, 0x11171c, 0x3c5064);
 			
 			ChangeImage( new $NoItem() );
 			
